@@ -85,7 +85,6 @@ class KubBase(object):
             self._variables.update(self._deploy_vars)
         return self._variables
 
-
     def _fetch_package(self):
         parse = urlparse(self._deploy_name)
         if parse.scheme in ["http", "https"]:

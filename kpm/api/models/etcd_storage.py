@@ -2,14 +2,7 @@ import etcd
 import kpm.semver as semver
 import re
 from kpm.api.models.base_models import PackageModelBase
-from kpm.api.exception import (ApiException,
-                               InvalidUsage,
-                               InvalidVersion,
-                               PackageAlreadyExists,
-                               PackageNotFound,
-                               PackageVersionNotFound)
-
-
+from kpm.api.exception import PackageAlreadyExists
 
 
 etcd_client = etcd.Client(port=2379)

@@ -1,5 +1,4 @@
 from flask import jsonify, request, Blueprint, current_app
-from kpm.api.authorization import check_access
 import kpm
 
 

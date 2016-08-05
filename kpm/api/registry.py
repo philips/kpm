@@ -1,24 +1,22 @@
-import re
 import yaml
 import json
 from base64 import b64decode
 from flask import jsonify, request, Blueprint, current_app
-import semantic_version
 from kpm.api.app import getvalues
 from kpm.packager import Package
 import kpm.semver as semver
-from kpm.semver import last_version, select_version
+
 from kpm.api.exception import (ApiException,
                                InvalidUsage,
                                InvalidVersion,
                                PackageAlreadyExists,
                                PackageNotFound,
                                PackageVersionNotFound)
+
 import kpm.api.models.etcd_storage as models
+import etcd
 
 registry_app = Blueprint('registry', __name__,)
-
-
 
 
 @registry_app.errorhandler(etcd.EtcdKeyNotFound)
