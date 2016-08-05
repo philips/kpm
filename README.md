@@ -17,7 +17,6 @@ KPM uses a global registry, packages are immediately accessible and visible to t
 
   - How to scale database slaves(postgresql/mysql/redis) ?
   - How to deploy a production-grade elasticsearch/rabbitmq/zookeep/etcd/ clusters on kubernetes?
-
 It requires stable network identity and a unique storage per pod!
 
 ---> KPM creates multiple variation of a single template with simplicity

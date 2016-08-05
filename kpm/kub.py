@@ -1,22 +1,16 @@
 import copy
-import hashlib
-import tarfile
-import shutil
 import logging
 import os.path
 import jinja2
 import yaml
-import io
-import tempfile
 import jsonpatch
 import json
 from collections import OrderedDict
-import kpm.registry as registry
-import kpm.packager as packager
 import kpm.manifest as manifest
-import kpm.jinja_filters as jinja_filters
+from kpm.template_filters import jinja_filters
+from kpm.kub_base import KubBase
 from kpm.kubernetes import get_endpoint
-from kpm.utils import mkdir_p, convert_utf8
+from kpm.utils import convert_utf8
 
 
 # __all__ = ['Kub']
@@ -28,41 +22,17 @@ _mapping_tag = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
 
 
 jinja_env = jinja2.Environment()
-jinja_env.filters.update(jinja_filters.filters())
+jinja_env.filters.update(jinja_filters())
 
 
-class Kub(object):
-    def __init__(self, name, version=None, resources=[], variables={}, shards=[], namespace=None, endpoint=None):
-        self.name = name
-        self.endpoint = endpoint
-        self._dependencies = None
-        self._resources = None
-        self._deploy_resources = resources
-        self._deploy_shards = shards
-        self.namespace = namespace
-        self._registry = registry.Registry(endpoint=endpoint)
-        result = self._registry.pull(self.name, version)
-        self.package = packager.Package(result)
-
+class Kub(KubBase):
+    def __init__(self, *args, **kwargs):
+        super(Kub, self).__init__(*args, **kwargs)
         self.manifest = manifest.Manifest(self.package)
-        self.version = self.manifest.package['version']
-        self.author = self.manifest.package['author']
-        self.description = self.manifest.package['description']
-        self.deploy = self.manifest.deploy
-        self.variables = copy.deepcopy(self.manifest.variables)
-        if self.namespace:
-            variables["namespace"] = self.namespace
-        self.variables.update(variables)
 
-    def __unicode__(self):
-        return ("(<{class_name}({name}=={version})>".format(class_name=self.__class__.__name__,
-                                                            name=self.name, version=self.version))
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __repr__(self):
-        return unicode(self).encode('utf-8')
+    @property
+    def kubClass(self):
+        return Kub
 
     def _create_namespaces(self, resources):
         # @TODO create namespaces for all manifests
@@ -70,29 +40,6 @@ class Kub(object):
             ns = self.create_namespace(self.namespace)
             resources[ns['file']] = ns
         return resources
-
-    def create_namespace(self, namespace):
-        value = {"apiVersion": "v1",
-                 "kind": "Namespace",
-                 "metadata": {"name": namespace}}
-
-        resource = {"file": "%s-ns.yaml" % namespace,
-                    "value": value,
-                    "name": namespace,
-                    "generated": True,
-                    "order": -1,
-                    "hash": False,
-                    "protected": True,
-                    "patch": [],
-                    "variables": {},
-                    "type": "namespace"}
-        return resource
-
-    @property
-    def dependencies(self):
-        if self._dependencies is None:
-            self._fetch_deps()
-        return self._dependencies
 
     def _append_patch(self, resources={}):
         index = 0
@@ -106,18 +53,12 @@ class Kub(object):
             if 'patch' not in resource:
                 resource['patch'] = []
 
-        for resource in self._deploy_resources:
-            if 'patch' in resource and len(resource['patch']) > 0:
-                resources[resource['file']]["patch"] += resource['patch']
+        if self._deploy_resources is not None:
+            for resource in self._deploy_resources:
+                if 'patch' in resource and len(resource['patch']) > 0:
+                    resources[resource['file']]["patch"] += resource['patch']
 
         return resources
-
-    @property
-    def shards(self):
-        shards = self.manifest.shards
-        if len(self._deploy_shards):
-            shards = self._deploy_shards
-        return shards
 
     def _generate_shards(self, resources):
         if not len(self.shards):
@@ -220,30 +161,6 @@ class Kub(object):
             f.close()
         return index
 
-    def make_tarfile(self, source_dir):
-        output = io.BytesIO()
-        with tarfile.open(fileobj=output, mode="w:gz") as tar:
-            tar.add(source_dir, arcname=os.path.basename(source_dir))
-        return output
-
-    def build_tar(self, dest="/tmp"):
-        tempdir = tempfile.mkdtemp()
-        dest = os.path.join(tempdir, self.manifest.package_name())
-        mkdir_p(dest)
-        index = 0
-        for kub in self.dependencies:
-            index = kub.prepare_resources(dest, index)
-
-        package_json = self.build()
-        with open(os.path.join(dest, ".package.json"), mode="w") as f:
-            f.write(json.dumps(package_json))
-
-        tar = self.make_tarfile(dest)
-        tar.flush()
-        tar.seek(0)
-        shutil.rmtree(tempdir)
-        return tar.read()
-
     def build(self):
         result = []
         for kub in self.dependencies:
@@ -252,20 +169,11 @@ class Kub(object):
                                         ("namespace", kub.namespace),
                                         ("resources", [])])
             for _, resource in kub.resources().iteritems():
-                sha = None
-                if 'annotations' not in resource['value']['metadata']:
-                    resource['value']['metadata']['annotations'] = {}
-                if resource.get('hash', True):
-                    sha = hashlib.sha256(json.dumps(resource['value'])).hexdigest()
-                    resource['value']['metadata']['annotations']['kpm.hash'] = sha
-                resource['value']['metadata']['annotations']['kpm.version'] = kub.version
-                resource['value']['metadata']['annotations']['kpm.package'] = kub.name
-                resource['value']['metadata']['annotations']['kpm.parent'] = self.name
-                resource['value']['metadata']['annotations']['kpm.protected'] = str(resource['protected']).lower()
+                resource = self._annotate_resource(kub, resource)
 
                 kubresources['resources'].\
                     append(OrderedDict({"file": resource['file'],
-                                        "hash": sha,
+                                        "hash": resource['value']['metadata']['annotations'].get('kpm.hash', None),
                                         "protected": resource['protected'],
                                         "name": resource['name'],
                                         "kind": resource['value']['kind'].lower(),
@@ -278,22 +186,3 @@ class Kub(object):
         return {"deploy": result,
                 "package": {"name": self.name,
                             "version": self.version}}
-
-    def _fetch_deps(self):
-        self._dependencies = []
-        for dep in self.manifest.deploy:
-            if dep['name'] != '$self':
-                variables = dep.get('variables', {})
-                variables['kpmparent'] = {'name': self.name,
-                                          'shards': self.shards,
-                                          'variables': self.variables}
-                kub = Kub(dep['name'],
-                          endpoint=self.endpoint,
-                          version=dep.get('version', None),
-                          variables=variables,
-                          shards=dep.get('shards', []),
-                          resources=dep.get('resources', []),
-                          namespace=self.namespace)
-                self._dependencies.append(kub)
-            else:
-                self._dependencies.append(self)

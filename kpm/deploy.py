@@ -25,10 +25,17 @@ def _process(package_name,
              action="create",
              fmt="stdout",
              proxy=None,
-             variables=None):
+             variables=None,
+             shards=None,
+             jsonnet=False):
 
     registry = Registry(endpoint=endpoint)
-    packages = registry.generate(package_name, namespace=namespace, version=version, variables=variables)
+    packages = registry.generate(package_name,
+                                 namespace=namespace,
+                                 version=version,
+                                 variables=variables,
+                                 shards=shards,
+                                 jsonnet=jsonnet)
     dest = os.path.join(dest, package_name)
 
     if version:
@@ -50,7 +57,7 @@ def _process(package_name,
             body = resource["body"]
             endpoint = resource["endpoint"]
             # Use API instead of kubectl
-            with open(os.path.join(dest, resource['file']), 'wb') as f:
+            with open(os.path.join(dest, "%s-%s" % (resource['name'], resource['file'])), 'wb') as f:
                 f.write(body)
             kubresource = Kubernetes(namespace=namespace, body=body, endpoint=endpoint, proxy=proxy)
             status = getattr(kubresource, action)(force=force, dry=dry)

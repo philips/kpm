@@ -2,14 +2,17 @@ import pytest
 from kpm.manifest import Manifest
 
 
-@pytest.fixture(scope="module")
-def manifest(kubeui_package):
+@pytest.fixture()
+def manifest(kubeui_package, package_dir):
     return Manifest(kubeui_package)
 
+@pytest.fixture()
+def empty_manifest(empty_package_dir):
+    return Manifest(package=None)
 
-@pytest.fixture(scope="module")
-def empty_manifest():
-    return Manifest(None, None)
+@pytest.fixture()
+def bad_manifest():
+    return Manifest(package=None)
 
 
 def test_empty_resources(empty_manifest):
@@ -41,11 +44,11 @@ def test_kubename(manifest):
 
 
 def test_load_from_path(manifest):
-    m = Manifest(path="tests/data/kube-ui")
+    m = Manifest()
     assert m == manifest
 
 
-def test_load_bad_manifest(manifest):
+def test_load_bad_manifest(bad_package_dir):
     import yaml
     with pytest.raises(yaml.YAMLError):
-        Manifest(path="tests/data/bad_manifest")
+        Manifest(package=None)

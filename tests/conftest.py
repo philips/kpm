@@ -76,6 +76,15 @@ def package_dir(monkeypatch):
 
 
 @pytest.fixture()
+def bad_package_dir(monkeypatch):
+    monkeypatch.chdir("tests/data/bad_manifest")
+
+@pytest.fixture()
+def empty_package_dir(monkeypatch):
+    monkeypatch.chdir("tests/data")
+
+
+@pytest.fixture()
 def pack_tar(package_dir, tmpdir):
     from kpm.packager import pack_kub
     kub = os.path.join(str(tmpdir.mkdir("tars")), "kube-ui.tar.gz")

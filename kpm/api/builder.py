@@ -1,6 +1,7 @@
 import json
 from flask import jsonify, Blueprint, current_app
 from kpm.kub import Kub
+from kpm.kub_jsonnet import KubJsonnet
 from kpm.api.app import getvalues
 
 builder_app = Blueprint('builder', __name__,)
@@ -12,9 +13,19 @@ def _build(package):
     version = values.get('version', None)
     namespace = values.get('namespace', 'default')
     variables = values.get('variables', {})
+    shards = values.get('shards', None)
     variables['namespace'] = namespace
-    k = Kub(name, endpoint=current_app.config['KPM_REGISTRY_HOST'],
-            variables=variables, namespace=namespace, version=version)
+    jsonnet = (values.get('jsonnet', 'false') == 'true')
+    if jsonnet:
+        kub_class = KubJsonnet
+    else:
+        kub_class = Kub
+    k = kub_class(name,
+                  endpoint=current_app.config['KPM_REGISTRY_HOST'],
+                  variables=variables,
+                  namespace=namespace,
+                  version=version,
+                  shards=shards)
 
     return k
 
@@ -33,6 +44,7 @@ def tree(package):
 
 @builder_app.route("/api/v1/packages/<path:package>/generate", methods=['POST', 'GET'])
 def build(package):
+    current_app.logger.info("generate %s", package)
     k = _build(package)
     return jsonify(k.build())
 

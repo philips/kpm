@@ -38,7 +38,7 @@ def ishosted(package):
         return False
 
 
-def discover_sources(package, secure=False):
+def discover_sources(package, version=None, secure=False):
     m = re.search(package_regexp, package)
     host, name = (m.group(1), m.group(2))
     schemes = ["https://", "http://"]
@@ -53,6 +53,9 @@ def discover_sources(package, secure=False):
                 raise e
 
         r.raise_for_status()
+        variables = {'name': name}
+        if version:
+            variables['version'] = version
         p = MetaHTMLParser({'name': name})
         p.feed(r.content)
         if package in p.meta:
