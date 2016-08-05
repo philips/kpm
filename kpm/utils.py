@@ -50,3 +50,11 @@ def convert_utf8(data):
         return type(data)(map(convert_utf8, data))
     else:
         return data
+
+
+def custom_import(name):
+    import importlib
+    module, klass_name = name.split(':')
+    mod = importlib.import_module(module)
+    klass = getattr(mod, klass_name)
+    return klass

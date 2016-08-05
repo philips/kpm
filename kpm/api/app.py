@@ -2,6 +2,8 @@ import os
 from flask import Flask, request
 import flask.ext.cors
 from kpm.loghandler import init_logging
+from kpm.utils import custom_import
+
 
 
 def getvalues():
