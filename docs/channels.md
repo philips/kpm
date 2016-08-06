@@ -1,0 +1,98 @@
+### Releases
+##### List releases in the channel 'stable'
+```
+$ kpm releases ant31/rocketchat --channel stable
+stable: 1.0.0, 1.1.0
+```
+##### List all releases by channels
+```
+$ kpm releases ant31/rocketchat --all-channels
+stable: 1.0.0, 1.1.0
+beta: 1.1.0-beta.3, 1.4.0-beta-2
+dev: 1.5.0-dev, 1.5.0-dev.2
+```
+##### List all releases
+```
+$ kpm releases ant31/rocketchat
+version revision date       digest
+1.0.0   4        2016-08-02 h324052fds
+1.1.0   1        2016-08-01 zs32t45l231
+```
+### Release revision
+##### List all revision for a release
+```
+$ kpm release ant31/rocketchat:v1.1.0
+revision date       current digest
+4        2016-08-02 yes     h3243252f5s
+3        2016-07-31 -       e321266lf2s
+2        2016-06-26 -       a3244366f3s
+1        2016-06-25 -       zs32t45l231
+```
+
+#### Change active revision
+```
+$ kpm release ant31/rocketchat:v1.1.0 --current-revision=3
+revision date       current digest
+4        2016-08-02 -       h3243252f5s
+3        2016-07-31 yes     e321266lf2s
+2        2016-06-26 -       a3244366f3s
+1        2016-06-25 -       zs32t45l231
+```
+### Channels
+
+##### List Channels for a package
+```
+$ kpm channels ant31/rocketchat
+name   releases current       default
+stable 4        v1.2.0        -
+prod   2        v1.1.0        -
+beta   6        v1.4.0-beta.2 yes
+```
+##### Create a new channel
+```
+$ kpm channel ant31/rocketchat -n beta --create
+```
+##### Add/Remove releases
+```
+kpm channel ant31/rocketchat -n beta --releases v1.0.0,v1.1.0,v1.2.0
+kpm channel ant31/rocketchat -n beta --add v1.3.0,v1.4.0
+kpm channel ant31/rocketchat -n beta --remove v1.0.0,v1.1.0
+```
+
+### Deploy
+###### default channel, default release
+`$ kpm deploy ant31/rocketchat`
+###### default channel, select release
+`$ kpm deploy ant31/rocketchat:v1.1.0`
+###### default channel, select release-revision
+`$ kpm deploy ant31/rocketchat:v1.1.0 --revision 2`
+###### Use directly the digest
+`$ kpm deploy ant31/rocketchat@sha256:0ecb2ad60`
+###### stable channel, default release
+`$ kpm deploy ant31/rocketchat --channel stable`
+###### stable channel, select release
+`$ kpm deploy ant31/rocketchat:v1.1.0 --channel stable`
+###### stable channel, release not in the channel
+```
+$ kpm deploy ant31/rocketchat:v1.4.0-beta.2 --channel stable
+--> Error v1.4.0-beta.2 doesn't exist in chan stable
+```
+
+### Push
+##### Push a new release
+```
+kpm push ant31/rocketchat:v1.1.0 [--channels stable,prod,beta]
+--> New release v1.1.0 revision 1 pushed
+```
+##### Push an existing release 
+```
+kpm push ant31/rocketchat:v1.1.0
+--> Error the release v1.1.0 already exist,  use --force
+```
+##### Push an existing release and create a new revision
+```
+kpm push ant31/rocketchat:v1.1.0 --force
+--> Release v1.1.0 updated to revision 2
+```
+
+
