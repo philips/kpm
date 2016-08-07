@@ -44,7 +44,7 @@ def etcd_package():
 def test_showversion(client):
     import kpm
     res = client.get("/version")
-    assert res.json == {"kpm": kpm.__version__}
+    assert res.json == {"kpm-api": kpm.__version__}
 
 
 def test_etcdkey():
