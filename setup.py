@@ -31,6 +31,7 @@ requirements = [
 
 secure_requirements = [
     'ecdsa',
+    'jsonnet'
     'cryptography',
     'urllib3[secure]'
 ]
