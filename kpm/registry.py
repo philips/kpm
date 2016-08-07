@@ -23,8 +23,8 @@ class Registry(object):
         self._headers = {'Content-Type': 'application/json',
                          'User-Agent': "kpmpy-cli: %s" % kpm.__version__}
 
-    def _url(self, path):
-        return urljoin(self.endpoint.geturl(), self.endpoint.path + API_PREFIX + path)
+    def _url(self, path, prefix=API_PREFIX):
+        return urljoin(self.endpoint.geturl(), self.endpoint.path + prefix + path)
 
     @property
     def headers(self):
@@ -37,7 +37,7 @@ class Registry(object):
 
     def version(self):
         path = "/version"
-        r = requests.get(self._url(path), headers=self.headers)
+        r = requests.get(self._url(path, prefix=""), headers=self.headers)
         r.raise_for_status()
         return r.json()
 

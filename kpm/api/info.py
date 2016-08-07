@@ -24,7 +24,7 @@ def pre_request_logging():
 
 @info_app.route("/version")
 def version():
-    return jsonify({"kpm": kpm.__version__})
+    return jsonify({"kpm-api": kpm.__version__})
 
 
 @info_app.route("/test_timeout")
