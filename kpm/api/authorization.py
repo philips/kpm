@@ -1,5 +1,6 @@
 from functools import wraps
 
+
 def authorization_level(package):
     """
     returns write, read or None
@@ -11,11 +12,14 @@ def authorization_level(package):
     else:
         return 'write'
 
+
 def write_access(package):
     return (authorization_level(package) == 'write')
 
+
 def read_access(package):
     return (authorization_level(package) is not None)
+
 
 def check_access(mode):
     def decorator(function):
@@ -35,13 +39,16 @@ def check_access(mode):
         return wrapper
     return decorator
 
+
 @check_access('read')
 def read(package):
     print "ok"
 
+
 @check_access('write')
 def write(package):
     print "ok"
+
 
 @check_access('bad')
 def bad(package):

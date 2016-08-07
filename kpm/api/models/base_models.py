@@ -1,18 +1,6 @@
-import re
-import yaml
-import json
-from base64 import b64decode
-from flask import jsonify, request, Blueprint, current_app
 import semantic_version
-from kpm.api.app import getvalues
-from kpm.packager import Package
-import kpm.semver as semver
 from kpm.semver import last_version, select_version
-from kpm.api.exception import (ApiException,
-                               InvalidUsage,
-                               InvalidVersion,
-                               PackageAlreadyExists,
-                               PackageNotFound,
+from kpm.api.exception import (InvalidVersion,
                                PackageVersionNotFound)
 
 
@@ -31,6 +19,7 @@ class PackageModelBase(object):
     def blob(self, value):
         self._blob = value
 
+    @classmethod
     def check_version(self, version):
         try:
             semantic_version.Version(version)

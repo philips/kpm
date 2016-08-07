@@ -35,7 +35,6 @@ class Registry(object):
             headers['Authorization'] = token
         return headers
 
-
     def version(self):
         path = "/version"
         r = requests.get(self._url(path), headers=self.headers)

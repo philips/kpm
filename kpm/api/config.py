@@ -8,6 +8,7 @@ class Config(object):
     KPM_REGISTRY_HOST = os.getenv('KPM_REGISTRY_HOST', 'http://localhost:5000')
     KPM_BUILDER_HOST = os.getenv('KPM_BUILDER_HOST', 'http://localhost:5000')
     KPM_URI = os.getenv('KPM_URI', "http://localhost:5000")
+    KPM_MODELS_MODULE = os.getenv('KPM_MODELS_MODULE', "kpm.api.models.etcd")
 
 
 class ProductionConfig(Config):
