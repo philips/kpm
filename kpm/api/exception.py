@@ -37,3 +37,8 @@ class PackageNotFound(ApiException):
 class PackageVersionNotFound(ApiException):
     status_code = 404
     errorcode = "package-version-not-found"
+
+
+class UnauthorizedAccess(ApiException):
+    status_code = 401
+    errorcode = "unauthorized-access"

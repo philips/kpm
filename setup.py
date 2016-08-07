@@ -29,9 +29,11 @@ requirements = [
     'flask-cors',
 ]
 
-requirements_crypto = [
+secure_requirements = [
     'ecdsa',
-    'cryptography'
+    'jsonnet'
+    'cryptography',
+    'urllib3[secure]'
 ]
 
 test_requirements = [
@@ -44,7 +46,7 @@ test_requirements = [
 
 setup(
     name='kpm',
-    version='0.16.2',
+    version='0.17.1',
     description="KPM cli",
     long_description=readme + '\n\n' + history,
     author="Antoine Legrand",
@@ -72,5 +74,8 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    extras_require={
+        'secure': secure_requirements
+    }
 )

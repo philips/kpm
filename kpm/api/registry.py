@@ -119,11 +119,9 @@ def pull(package):
 @registry_app.route("/api/v1/packages/<path:package>", methods=['POST'], strict_slashes=False)
 @registry_app.route("/api/v1/packages", methods=['POST'], strict_slashes=False)
 def push(package=None):
-
     values = getvalues()
     blob = values['blob']
     package = values['package']
-    print values
     version = values['version']
     force = False
     if 'force' in values:

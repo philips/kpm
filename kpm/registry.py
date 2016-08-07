@@ -24,7 +24,7 @@ class Registry(object):
                          'User-Agent': "kpmpy-cli: %s" % kpm.__version__}
 
     def _url(self, path):
-        return urljoin(self.endpoint.geturl(), API_PREFIX + path)
+        return urljoin(self.endpoint.geturl(), self.endpoint.path + API_PREFIX + path)
 
     @property
     def headers(self):
@@ -34,6 +34,13 @@ class Registry(object):
         if token is not None:
             headers['Authorization'] = token
         return headers
+
+
+    def version(self):
+        path = "/version"
+        r = requests.get(self._url(path), headers=self.headers)
+        r.raise_for_status()
+        return r.json()
 
     def pull(self, name, version=None):
         if ishosted(name):
@@ -58,10 +65,13 @@ class Registry(object):
         r.raise_for_status()
         return r.json()
 
-    def generate(self, name, namespace=None, variables=None, version=None, tarball=False):
+    def generate(self, name, namespace=None,
+                 variables=None, version=None, tarball=False,
+                 shards=None, jsonnet=False):
         path = "/packages/%s/generate" % name
         params = {}
         body = {}
+        params['jsonnet'] = str(jsonnet).lower()
         if tarball:
             params['tarball'] = 'true'
         if version:
@@ -69,7 +79,9 @@ class Registry(object):
         if namespace:
             params['namespace'] = namespace
         if variables:
-            body = {'variables':  variables}
+            body['variables'] = variables
+        if shards:
+            body['shards'] = shards
         r = requests.get(self._url(path), data=json.dumps(body), params=params, headers=self.headers)
         r.raise_for_status()
         return r.json()

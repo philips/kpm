@@ -51,7 +51,6 @@ def test_remove(deploy_json, remove_result, subcall_all):
                    force=False,
                    dry=False,
                    endpoint=None)
-        print r
         assert json.dumps(r) == json.dumps(remove_result)
 
 

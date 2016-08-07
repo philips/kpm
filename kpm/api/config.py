@@ -7,6 +7,7 @@ class Config(object):
     KUBE_APIMASTER = os.getenv('KUBE_APIMASTER', 'http://localhost:8001')
     KPM_REGISTRY_HOST = os.getenv('KPM_REGISTRY_HOST', 'http://localhost:5000')
     KPM_BUILDER_HOST = os.getenv('KPM_BUILDER_HOST', 'http://localhost:5000')
+    KPM_URI = os.getenv('KPM_URI', "http://localhost:5000")
 
 
 class ProductionConfig(Config):

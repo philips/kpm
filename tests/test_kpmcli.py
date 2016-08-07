@@ -284,22 +284,22 @@ def test_deploy(project_dir, subcall_all, user, parser, pkgname, api_stg, capsys
     response = """create {pkgname} \n
  01 - {pkgname}:
  --> testns (namespace): {ok}
- --> kube-ui (replicationcontroller): {ok}
+ --> kube-ui (replicationcontroller): {updated}
  --> kube-ui (service): {updated}
 
 
 package                    version    type                   name     namespace    status
 -------------------------  ---------  ---------------------  -------  -----------  --------
 {pkgname}  1.0.1      namespace              testns   testns       {ok}
-{pkgname}  1.0.1      replicationcontroller  kube-ui  testns       {ok}
+{pkgname}  1.0.1      replicationcontroller  kube-ui  testns       {updated}
 {pkgname}  1.0.1      service                kube-ui  testns       {updated}\n""".format(pkgname=pkgname,
                                                                                          ok=colorize('ok'),
                                                                                          updated=colorize('updated'))
 
-    # with open("/tmp/r", "w") as f:
-    #     f.write(out)
-    # with open("/tmp/r2", "w") as f:
-    #     f.write(response)
+    with open("/tmp/r", "w") as f:
+        f.write(out)
+    with open("/tmp/r2", "w") as f:
+        f.write(response)
 
     assert out == response
 
