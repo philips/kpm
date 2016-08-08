@@ -6,14 +6,14 @@ from kpm.api.app import getvalues
 from kpm.packager import Package
 import kpm.semver as semver
 
-from kpm.api.exception import (ApiException,
-                               InvalidUsage,
-                               InvalidVersion,
-                               PackageAlreadyExists,
-                               PackageNotFound,
-                               PackageVersionNotFound)
+from kpm.exception import (KpmException,
+                           InvalidUsage,
+                           InvalidVersion,
+                           PackageAlreadyExists,
+                           PackageNotFound,
+                           PackageVersionNotFound)
 
-import kpm.api.models.etcd_storage as models
+import kpm.models.etcd_storage as models
 import etcd
 
 registry_app = Blueprint('registry', __name__,)
@@ -29,7 +29,7 @@ def render_etcdkeyerror(error):
 @registry_app.errorhandler(InvalidVersion)
 @registry_app.errorhandler(PackageNotFound)
 @registry_app.errorhandler(PackageVersionNotFound)
-@registry_app.errorhandler(ApiException)
+@registry_app.errorhandler(KpmException)
 @registry_app.errorhandler(InvalidUsage)
 def render_error(error):
     response = jsonify({"error": error.to_dict()})

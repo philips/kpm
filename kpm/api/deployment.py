@@ -1,12 +1,12 @@
 from flask import jsonify, request, Blueprint, current_app
 import etcd
 import kpm.deploy
-from kpm.api.exception import (ApiException,
-                               InvalidUsage,
-                               InvalidVersion,
-                               PackageAlreadyExists,
-                               PackageNotFound,
-                               PackageVersionNotFound)
+from kpm.exception import (KpmException,
+                           InvalidUsage,
+                           InvalidVersion,
+                           PackageAlreadyExists,
+                           PackageNotFound,
+                           PackageVersionNotFound)
 
 
 deployment_app = Blueprint('deployment', __name__,)
@@ -18,7 +18,7 @@ ETCD_PREFIX = "kpm/deployments/"
 @deployment_app.errorhandler(PackageAlreadyExists)
 @deployment_app.errorhandler(PackageNotFound)
 @deployment_app.errorhandler(PackageVersionNotFound)
-@deployment_app.errorhandler(ApiException)
+@deployment_app.errorhandler(KpmException)
 @deployment_app.errorhandler(InvalidVersion)
 @deployment_app.errorhandler(InvalidUsage)
 def render_error(error):

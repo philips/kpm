@@ -54,7 +54,8 @@ setup(
     url='https://github.com/kubespray/kpm',
     packages=[
         'kpm',
-        'kpm.api'
+        'kpm.api',
+        'kpm.models'
     ],
     scripts=[
         'bin/kpm'

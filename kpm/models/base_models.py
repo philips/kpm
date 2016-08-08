@@ -1,7 +1,7 @@
 import semantic_version
 from kpm.semver import last_version, select_version
-from kpm.api.exception import (InvalidVersion,
-                               PackageVersionNotFound)
+from kpm.exception import (InvalidVersion,
+                           PackageVersionNotFound)
 
 
 class PackageModelBase(object):
