@@ -13,7 +13,7 @@ from kpm.exception import (KpmException,
                            PackageNotFound,
                            PackageVersionNotFound)
 
-import kpm.models.etcd_storage as models
+import kpm.models as models
 import etcd
 
 registry_app = Blueprint('registry', __name__,)

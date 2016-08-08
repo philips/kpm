@@ -13,6 +13,9 @@ class KpmException(Exception):
              "details": self.payload}
         return r
 
+    def __str__(self):
+        return self.message
+
 
 class InvalidUsage(KpmException):
     status_code = 400
