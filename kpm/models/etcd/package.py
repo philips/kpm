@@ -21,7 +21,7 @@ class Package(PackageModelBase):
 
     @classmethod
     def all_versions(self, package):
-        path = ETCD_PREFIX + package
+        path = ETCD_PREFIX + package + "/releases"
         try:
             r = etcd_client.read(path, recursive=True)
         except etcd.EtcdKeyNotFound:
@@ -45,7 +45,7 @@ class Package(PackageModelBase):
             etcd_client.write(path, None, dir=True)
 
         for child in packages.children:
-            m = re.match("^/%s(.+)/(.+)/(.+)$" % ETCD_PREFIX, child.key)
+            m = re.match("^/%s(.+)/(.+)/releases/(.+)$" % ETCD_PREFIX, child.key)
             if m is None:
                 continue
             organization, name, version = (m.group(1), m.group(2), m.group(3))
@@ -61,14 +61,14 @@ class Package(PackageModelBase):
         return r.values()
 
     def _save(self, force=False):
-        self._push_etcd(self.name, self.version, self.blob, force=force)
+        self._push_etcd(self.package, self.version, self.blob, force=force)
 
     def delete(self):
         raise NotImplementedError
 
     @classmethod
     def _etcdkey(self, package, version):
-        return ETCD_PREFIX + "%s/%s" % (package, version)
+        return ETCD_PREFIX + "%s/releases/%s" % (package, version)
 
     def _push_etcd(self, package, version, data, force=False):
         path = self._etcdkey(package, version)
