@@ -37,6 +37,11 @@ class PackageNotFound(KpmException):
     errorcode = "package-not-found"
 
 
+class ChannelNotFound(KpmException):
+    status_code = 404
+    errorcode = "channel-not-found"
+
+
 class PackageVersionNotFound(KpmException):
     status_code = 404
     errorcode = "package-version-not-found"
