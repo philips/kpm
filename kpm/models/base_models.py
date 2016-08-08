@@ -66,6 +66,9 @@ class PackageModelBase(object):
         self.check_version(self.version)
         self._save(force)
 
+    def versions(self):
+        return self.all_versions(self.package)
+
     @classmethod
     def all(self, organization=None):
         raise NotImplementedError
@@ -83,6 +86,3 @@ class PackageModelBase(object):
     @classmethod
     def all_versions(self, package):
         raise NotImplementedError
-
-    def versions(self):
-        return self.all_versions(self.package)

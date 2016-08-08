@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request
-import flask.ext.cors
+from flask_cors import CORS
 from kpm.loghandler import init_logging
 
 
@@ -14,7 +14,7 @@ def getvalues():
 
 def create_app():
     app = Flask(__name__)
-    flask.ext.cors.CORS(app)
+    CORS(app)
     setting = os.getenv('APP_ENV', "development")
 
     if setting != 'production':
