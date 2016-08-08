@@ -1,7 +1,8 @@
 import semantic_version
 from kpm.semver import last_version, select_version
 from kpm.exception import (InvalidVersion,
-                           PackageVersionNotFound)
+                           PackageVersionNotFound,
+                           PackageNotFound)
 
 
 class PackageModelBase(object):
@@ -68,6 +69,10 @@ class PackageModelBase(object):
 
     def versions(self):
         return self.all_versions(self.package)
+
+    def _raise_not_found(self, package, version=None):
+        raise PackageNotFound("package %s doesn't exist" % package,
+                              {'package': package, 'version': version})
 
     @classmethod
     def all(self, organization=None):

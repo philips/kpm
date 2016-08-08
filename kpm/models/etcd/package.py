@@ -1,13 +1,9 @@
 import etcd
 import kpm.semver as semver
 import re
-from kpm.models.base_models import PackageModelBase
+from kpm.models.package_base import PackageModelBase
 from kpm.exception import PackageAlreadyExists
-
-
-etcd_client = etcd.Client(port=2379)
-
-ETCD_PREFIX = "kpm/packages/"
+from kpm.models.etcd import etcd_client, ETCD_PREFIX
 
 
 class Package(PackageModelBase):
@@ -17,13 +13,20 @@ class Package(PackageModelBase):
     @classmethod
     def _fetch(self, package, version):
         path = self._etcdkey(package, str(version))
-        package_data = etcd_client.read(path)
+        try:
+            package_data = etcd_client.read(path)
+        except etcd.EtcdKeyNotFound:
+            self._raise_not_found(package, version)
         return package_data
 
     @classmethod
     def all_versions(self, package):
         path = ETCD_PREFIX + package
-        r = etcd_client.read(path, recursive=True)
+        try:
+            r = etcd_client.read(path, recursive=True)
+        except etcd.EtcdKeyNotFound:
+            self._raise_not_found(package, None)
+
         versions = []
         for p in r.children:
             version = p.key.split("/")[-1]
