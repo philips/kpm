@@ -3,7 +3,7 @@ class KpmException(Exception):
     errorcode = "internal-error"
 
     def __init__(self, message, payload=None):
-        Exception.__init__(self)
+        super(KpmException, self).__init__()
         self.payload = dict(payload or ())
         self.message = message
 
@@ -30,6 +30,11 @@ class InvalidVersion(KpmException):
 class PackageAlreadyExists(KpmException):
     status_code = 409
     errorcode = "package-exists"
+
+
+class ChannelAlreadyExists(KpmException):
+    status_code = 409
+    errorcode = "channel-exists"
 
 
 class PackageNotFound(KpmException):

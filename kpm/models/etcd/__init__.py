@@ -1,9 +1,14 @@
 import etcd
 import re
 
-etcd_client = etcd.Client(port=2379)
-
 ETCD_PREFIX = "kpm/packages/"
+
+
+class EtcdClient(etcd.client.Client):
+    pass
+
+
+etcd_client = EtcdClient(port=2379)
 
 
 def etcd_listkeys(key, path):

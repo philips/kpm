@@ -3,7 +3,7 @@ import kpm.semver as semver
 import re
 from kpm.models.package_base import PackageModelBase
 from kpm.exception import PackageAlreadyExists
-from kpm.models.etcd import etcd_client, ETCD_PREFIX
+from kpm.models.etcd import ETCD_PREFIX, etcd_client
 
 
 class Package(PackageModelBase):
@@ -14,7 +14,7 @@ class Package(PackageModelBase):
     def _fetch(self, package, version):
         path = self._etcdkey(package, str(version))
         try:
-            package_data = etcd_client.read(path)
+            package_data = etcd_client.read(path).value
         except etcd.EtcdKeyNotFound:
             self._raise_not_found(package, version)
         return package_data

@@ -1,5 +1,5 @@
 import datetime
-from kpm.exception import ChannelNotFound
+from kpm.exception import ChannelNotFound, ChannelAlreadyExists
 import kpm.semver as semver
 
 
@@ -26,6 +26,16 @@ class ChannelBase(object):
     @classmethod
     def all(self, package):
         """ Returns all available channels for a package """
+        channel_names = self._all(package)
+        result = {}
+        for channel in channel_names:
+            c = self(channel, package)
+            releases = c.releases()
+            result[str(channel)] = {"releases": releases, "current": c.current_release(releases)}
+        return result
+
+    @classmethod
+    def _all(self, package):
         raise NotImplementedError
 
     def releases(self):
@@ -40,9 +50,12 @@ class ChannelBase(object):
         # etcdctl put /{self.package/channels/{self.name}/version
         raise NotImplementedError
 
-    def current_release(self):
-        versions = self.releases()
-        ordered_versions = [str(x) for x in sorted(semver.versions(versions, False),
+    def current_release(self, releases=None):
+        if releases is None:
+            releases = self.releases()
+        if not releases:
+            return None
+        ordered_versions = [str(x) for x in sorted(semver.versions(releases, False),
                                                    reverse=True)]
         return ordered_versions[0]
 
@@ -54,14 +67,14 @@ class ChannelBase(object):
             raise ValueError("Release %s doesn't exist for package %s" % (version, self.package))
         if not self.exists():
             self.save()
-        self._add_release(version)
+        return self._add_release(version)
 
     def remove_release(self, version):
         if self._check_release(version) is False:
             raise ValueError("Release %s doesn't exist for package %s" % (version, self.package))
         if not self.exists():
             self.save()
-        self._remove_release(version)
+        return self._remove_release(version)
 
     def _check_release(self, release_name):
         from kpm.models import Package
@@ -79,8 +92,17 @@ class ChannelBase(object):
     @classmethod
     def _raise_not_found(self, package, channel=None, version=None):
         if channel is None:
-            raise ChannelNotFound("No channel found for package %s" % (package),
+            raise ChannelNotFound("No channel found for package '%s'" % (package),
                                   {'package': package})
         else:
-            raise ChannelNotFound("channel %s doesn't exist for package %s" % (channel, package),
+            raise ChannelNotFound("Channel '%s' doesn't exist for package '%s'" % (channel, package),
                                   {'channel': channel, 'package': package, 'version': version})
+
+    @classmethod
+    def _raise_already_exists(self, channel, package, version=None):
+        if version is None:
+            raise ChannelAlreadyExists("Channel '%s' exists already for package '%s'" % (channel, package),
+                                       {'package': package, 'channel': channel})
+        else:
+            raise ChannelAlreadyExists("Realease '%s' exists already in channel '%s'" % (version, channel),
+                                       {'package': package, 'channel': channel, 'version': version})
