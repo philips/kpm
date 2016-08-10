@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import re
 import argparse
 import getpass
 import json
@@ -21,6 +22,13 @@ import base64
 
 
 def new(options):
+    package = options.package[0]
+    if re.match(r"^[a-z0-9_-]+/[a-z0-9_-]+$", package) is None:
+        if re.match(r"^.+?/.+?$", package) is not None:
+            raise argparse.ArgumentTypeError("Package names are restricted to [a-z0-9_-] ")
+        else:
+            raise argparse.ArgumentTypeError("Package '%s' does not match format 'namespace/name'" %
+                                             (package))
     new_package(options.package[0], options.directory, options.with_comments)
 
 
@@ -429,3 +437,12 @@ def get_parser():
     jsonnet_parser.set_defaults(func=jsonnet)
 
     return parser
+
+
+def cli():
+    parser = get_parser()
+    args = parser.parse_args()
+    try:
+        args.func(args)
+    except (argparse.ArgumentTypeError, argparse.ArgumentError) as e:
+        parser.error(e.message)
