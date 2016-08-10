@@ -109,7 +109,7 @@ class Kub(KubBase):
             else:
                 tpl_file = resource['file']
             if from_value or resource.get('generated', False) is True:
-                val = yaml.safe_dump(convert_utf8(resource['value']))
+                val = yaml.safe_dump(convert_utf8(resource['value']), width=float("inf"))
             else:
                 val = self.package.files[os.path.join('templates', tpl_file)]
             template = jinja_env.from_string(val)
