@@ -119,7 +119,7 @@ class Kub(KubBase):
             if len(self.shards):
                 variables['kpmshards'] = self.shards
             t = template.render(variables)
-            resource['value'] = yaml.load(t)
+            resource['value'] = yaml.safe_load(t)
         return resources
 
     def _apply_patches(self, resources):
