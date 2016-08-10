@@ -17,7 +17,6 @@ from kpm.new import new_package
 from kpm.console import KubernetesExec
 from kpm.utils import parse_cmdline_variables
 
-
 import base64
 
 
@@ -192,6 +191,29 @@ def delete_package(options):
     print "Package %s deleted" % (options.package[0])
 
 
+def channel(options):
+    r = Registry(options.registry_host)
+    package = options.package[0]
+    name = options.name
+    if options.create is True:
+        if options.name is None:
+            raise ValueError("missing channel name")
+        r.create_channel(package, name)
+        print ">>> Channel '%s' on '%s' created" % (name, package)
+    elif options.add is None and options.remove is None:
+        if name is None:
+            print r.list_channels(package)
+        else:
+            print r.show_channel(package, name)
+    else:
+        if options.add is not None:
+            r.create_channel_release(package, name, options.add)
+            print ">>> Release '%s' added on '%s'" % (options.add, name)
+        if options.remove is not None:
+            r.delete_channel_release(package, name, options.remove)
+            print ">>> Release '%s' removed from '%s'" % (options.remove, name)
+
+
 def get_parser():
     parser = argparse.ArgumentParser()
 
@@ -334,6 +356,22 @@ def get_parser():
                              help='registry API url')
 
     list_parser.set_defaults(func=list_packages)
+
+    # channel
+    channel_parser = subparsers.add_parser('channel', help='channel packages')
+    channel_parser.add_argument("-n", "--name", nargs="?", default=None,
+                                help="channel name")
+    channel_parser.add_argument("--add", nargs="?", default=None,
+                                help="Add a version to the channel")
+    channel_parser.add_argument("--create", default=False, action='store_true',
+                                help="Create the channel")
+    channel_parser.add_argument("--remove", nargs="?", default=None,
+                                help="Remove a version to the channel")
+    channel_parser.add_argument("-H", "--registry-host", nargs="?", default=registry.DEFAULT_REGISTRY,
+                                help='registry API url')
+    channel_parser.add_argument('package', nargs=1, help="package-name")
+
+    channel_parser.set_defaults(func=channel)
 
     #  DELETE-PACKAGE
     delete_parser = subparsers.add_parser('delete-package', help='delete package from the registry')
