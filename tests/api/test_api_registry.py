@@ -39,7 +39,7 @@ def test_showversion(client):
 
 
 def test_etcdkey():
-    assert models.Package._etcdkey("a/b", "1.4.3") == "kpm/packages/a/b/1.4.3"
+    assert models.Package._etcdkey("a/b", "1.4.3") == "kpm/packages/a/b/releases/1.4.3"
 
 
 def test_check_data_validversion():
@@ -54,13 +54,13 @@ def test_check_data_invalidversion():
 @pytest.fixture()
 def getversions(monkeypatch):
     def read(path, recursive=True):
-        assert path == "kpm/packages/ant31/rocketchat"
-        return MockEtcdResults(["kpm/packages/ant31/rocketchat/1.3.0",
-                                "kpm/packages/ant31/rocketchat/1.3.2-rc2",
-                                "kpm/packages/ant31/rocketchat/1.8.2-rc2",
-                                "kpm/packages/ant31/rocketchat/1.4.2",
-                                "kpm/packages/ant31/rocketchat/1.0.0",
-                                "kpm/packages/ant31/rocketchat/1.2.0"])
+        assert path == "kpm/packages/ant31/rocketchat/releases"
+        return MockEtcdResults(["kpm/packages/ant31/rocketchat/releases/1.3.0",
+                                "kpm/packages/ant31/rocketchat/releases/1.3.2-rc2",
+                                "kpm/packages/ant31/rocketchat/releases/1.8.2-rc2",
+                                "kpm/packages/ant31/rocketchat/releases/1.4.2",
+                                "kpm/packages/ant31/rocketchat/releases/1.0.0",
+                                "kpm/packages/ant31/rocketchat/releases/1.2.0"])
     monkeypatch.setattr("kpm.models.etcd.etcd_client.read", read)
 
 
@@ -70,7 +70,7 @@ def test_getversions(getversions):
 
 def test_getversions_empty(monkeypatch):
     def read(path, recursive=True):
-        assert path == "kpm/packages/ant31/rocketchat"
+        assert path == "kpm/packages/ant31/rocketchat/releases"
         return MockEtcdResults([])
     monkeypatch.setattr("kpm.models.etcd.etcd_client.read", read)
     assert models.Package.all_versions("ant31/rocketchat") == []
@@ -95,7 +95,7 @@ def test_getversion_prerelease(getversions):
 
 def test_push_etcd(monkeypatch):
     def write(path, data, prevExist):
-        assert path == "kpm/packages/a/b/4"
+        assert path == "kpm/packages/a/b/releases/4"
         assert data == "value"
         return True
     monkeypatch.setattr("kpm.models.etcd.etcd_client.write", write)
@@ -105,7 +105,7 @@ def test_push_etcd(monkeypatch):
 
 def test_push_etcd_exist(monkeypatch):
     def write(path, data, prevExist):
-        assert path == "kpm/packages/a/b/4"
+        assert path == "kpm/packages/a/b/releases/4"
         assert data == "value"
         raise etcd.EtcdAlreadyExist
     monkeypatch.setattr("kpm.models.etcd.etcd_client.write", write)

@@ -24,6 +24,7 @@ def version(registry_host=None):
 
 models_path = {
     'Package': '{models_module}.package:Package',
+    'Channel': '{models_module}.channel:Channel',
 }
 
 models_module = os.getenv('KPM_MODELS_MODULE', "kpm.models.etcd")

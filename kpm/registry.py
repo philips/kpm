@@ -133,3 +133,29 @@ class Registry(object):
         r = requests.delete(self._url(path), params=params, headers=self.headers)
         r.raise_for_status()
         return True
+
+    def _crud_channel(self, name, channel='', action='get'):
+        path = "/packages/%s/channels/%s" % (name, channel)
+        r = getattr(requests, action)(self._url(path), params={}, headers=self.headers)
+        r.raise_for_status()
+        return r.json()
+
+    def list_channels(self, name):
+        return self._crud_channel(name)
+
+    def show_channel(self, name, channel):
+        return self._crud_channel(name, channel)
+
+    def create_channel(self, name, channel):
+        return self._crud_channel(name, channel, 'post')
+
+    def delete_channel(self, name, channel):
+        return self._crud_channel(name, channel, 'delete')
+
+    def create_channel_release(self, name, channel, release):
+        path = "%s/%s" % (channel, release)
+        return self._crud_channel(name, path, 'post')
+
+    def delete_channel_release(self, name, channel, release):
+        path = "%s/%s" % (channel, release)
+        return self._crud_channel(name, path, 'delete')

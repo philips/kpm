@@ -10,7 +10,9 @@ from kpm.exception import (KpmException,
                            InvalidUsage,
                            InvalidVersion,
                            PackageAlreadyExists,
+                           ChannelAlreadyExists,
                            PackageNotFound,
+                           ChannelNotFound,
                            PackageVersionNotFound)
 
 import kpm.models as models
@@ -26,11 +28,13 @@ def render_etcdkeyerror(error):
 
 
 @registry_app.errorhandler(PackageAlreadyExists)
+@registry_app.errorhandler(ChannelAlreadyExists)
 @registry_app.errorhandler(InvalidVersion)
 @registry_app.errorhandler(PackageNotFound)
 @registry_app.errorhandler(PackageVersionNotFound)
 @registry_app.errorhandler(KpmException)
 @registry_app.errorhandler(InvalidUsage)
+@registry_app.errorhandler(ChannelNotFound)
 def render_error(error):
     response = jsonify({"error": error.to_dict()})
     response.status_code = error.status_code
@@ -102,6 +106,7 @@ def show_package(package):
     response = {"manifest": manifest,
                 "version": manifest['package']['version'],
                 "name":  package,
+                "channels": models.Channel.all(package),
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
     if 'pull' in values and values['pull'] == 'true':
@@ -115,3 +120,50 @@ def delete_package(package):
     packagemodel = get_package(package, values)
     packagemodel.delete()
     return jsonify({"status": "delete", "packge": packagemodel.package, "version": packagemodel.version})
+
+
+# CHANNELS
+@registry_app.route("/api/v1/packages/<path:package>/channels", methods=['GET'], strict_slashes=False)
+def list_channels(package):
+    channels = models.Channel.all(package)
+    return jsonify({"channels": channels, 'package': package})
+
+
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:channel>", methods=['GET'], strict_slashes=False)
+def show_channel(package, channel):
+    c = models.Channel(channel, package)
+    r = c.releases()
+    channels = {channel: {"releases": r, "current": c.current_release(r)}}
+    return jsonify({"channels": channels, 'package': package})
+
+
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
+                    methods=['POST'], strict_slashes=False)
+def add_channel_release(package, name, release):
+    channel = models.Channel(name, package)
+    r = channel.add_release(release)
+    return jsonify({"channel": channel.name, "package": package,
+                    "release": release, "created_at": r['created_at'], 'action': 'create'})
+
+
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
+                    methods=['DELETE'], strict_slashes=False)
+def delete_channel_release(package, name, release):
+    channel = models.Channel(name, package)
+    return jsonify({"channel": channel.name, "package": package, "release": release, "action": 'delete'})
+
+
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
+                    methods=['POST'], strict_slashes=False)
+def create_channel(package, name):
+    channel = models.Channel(name, package)
+    channel.save()
+    return show_channel(package, name)
+
+
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
+                    methods=['DELETE'], strict_slashes=False)
+def delete_channel(package, name):
+    channel = models.Channel(name, package)
+    channel.delete()
+    return jsonify({"channel": channel.name, "package": package, "action": 'delete'})
