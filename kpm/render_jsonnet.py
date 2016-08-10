@@ -22,7 +22,7 @@ def yaml_to_jsonnet(manifestyaml):
     template = jinja_env.from_string(JSONNET_TEMPLATE)
     v = {"manifest": convert_utf8(json.loads(json.dumps(yaml.load(manifestyaml))))}
     templatedjsonnet = template.render(v)
-    jsonnet_str = re.sub(r'[\'"]{{(.*?)}}["\']', r"\1", templatedjsonnet)
+    jsonnet_str = re.sub(r'[\'"]{{(.*)}}["\']', r"\1", templatedjsonnet)
     return jsonnet_str
 
 
