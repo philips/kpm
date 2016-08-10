@@ -2,6 +2,8 @@ import logging
 import tarfile
 import glob
 import io
+import os
+import fnmatch
 
 __all__ = ['pack_kub', 'unpack_kub', 'Package', "authorized_files"]
 
@@ -18,12 +20,7 @@ logger = logging.getLogger(__name__)
 #
 #
 #
-AUTHORIZED_FILES = ["templates/*.yaml",
-                    "templates/*.jsonnet",
-                    "templates/*.libjsonnet",
-                    "templates/*.yml",
-                    "templates/*.j2",
-                    "*.libjsonnet",
+AUTHORIZED_FILES = ["*.libjsonnet",
                     "*.jsonnet",
                     "README.md",
                     "manifest.yaml",
@@ -31,11 +28,22 @@ AUTHORIZED_FILES = ["templates/*.yaml",
                     "deps/*.kub"]
 
 
+AUTHORIZED_TEMPLATES = ["*.yaml",
+                        "*.jsonnet",
+                        "*.libjsonnet",
+                        "*.yml",
+                        "*.j2"]
+
+
 def authorized_files():
     files = []
     for name in AUTHORIZED_FILES:
         for f in glob.glob(name):
             files.append(f)
+    for root, _, filenames in os.walk('templates'):
+        for name in AUTHORIZED_TEMPLATES:
+            for filename in fnmatch.filter(filenames, name):
+                files.append(os.path.join(root, filename))
     return files
 
 
