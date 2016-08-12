@@ -16,14 +16,31 @@ with open(os.path.join(os.path.dirname(__file__), "jsonnet/manifest.jsonnet.j2")
     JSONNET_TEMPLATE = f.read()
 
 
-def yaml_to_jsonnet(manifestyaml):
+def yaml_to_jsonnet(manifestyaml, tla_codes=None):
+    print manifestyaml
     jinja_env = jinja2.Environment()
     jinja_env.filters.update(filters.jinja_filters())
-    template = jinja_env.from_string(JSONNET_TEMPLATE)
+
+    # 1. Resolve old manifest variables
+    # Load 'old' manifest.yaml
     v = {"manifest": convert_utf8(json.loads(json.dumps(yaml.load(manifestyaml))))}
+    # Get variable from the 'old' manfiest and update  them
+    variables = v['manifest']['variables']
+    if tla_codes is not None and 'params' in tla_codes:
+        tla = json.loads(tla_codes['params']).get("variables", {})
+        variables.update(tla)
+    # Resolve the templated variables inside the 'old' manifest
+    manifest_tpl = jinja_env.from_string(manifestyaml)
+
+    # 2. Convert 'old' manifest.yaml to manifest.jsonnet
+    rendered_manifestyaml = manifest_tpl.render(variables)
+    v = {"manifest": convert_utf8(json.loads(json.dumps(yaml.load(rendered_manifestyaml))))}
+    # Load the yaml -> jsonnet template
+    template = jinja_env.from_string(JSONNET_TEMPLATE)
     templatedjsonnet = template.render(v)
-    jsonnet_str = re.sub(r'[\'"]{{(.*)}}["\']', r"\1", templatedjsonnet)
-    return jsonnet_str
+    # @TODO keep yaml format and escape 'jsonnet' commands:  key: "<% $.variables.key %>"
+    # jsonnet_str = re.sub(r'[\'"]<%(.*)%>["\']', r"\1", templatedjsonnet)
+    return templatedjsonnet
 
 
 class RenderJsonnet(object):

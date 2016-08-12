@@ -7,7 +7,7 @@ function(
 kpm.package({
   package:  {expander: 'jinja2'} + {{manifest.package}},
 {% if manifest.variables is defined %}
-  variables: {{manifest.variables}},
+  variables: {{manifest.variables|json}},
 {% else %}
   variables: {},
 {% endif %}

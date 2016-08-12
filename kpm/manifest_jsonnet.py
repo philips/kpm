@@ -48,7 +48,7 @@ class ManifestJsonnet(ManifestBase):
 
     def _load_yaml(self, yamlstr, files):
         try:
-            jsonnetstr = yaml_to_jsonnet(yamlstr)
+            jsonnetstr = yaml_to_jsonnet(yamlstr, self.tla_codes)
             files['manifest.jsonnet'] = jsonnetstr
             self._load_jsonnet(jsonnetstr, files)
         except yaml.YAMLError, exc:
