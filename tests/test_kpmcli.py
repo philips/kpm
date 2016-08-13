@@ -5,23 +5,13 @@ import os
 import pytest
 import requests
 from kpm.utils import colorize
-from kpm.command import (new,
-                         show,
-                         install,
-                         remove,
-                         pull,
-                         push,
-                         list_packages,
-                         login,
-                         logout,
-                         delete_package,
-                         get_parser)
+from kpm.command import get_parser
 
 
 # 1. signup with uniq-test-id account
 # 2. push package with test-id as organization
 # 3. logout -> check ~/.kpm/auth is not exists
-# 4. try to push -> failed
+# 4. try to push -ts> failed
 # 5. login
 # 7. list -u test-id
 # -  delete package

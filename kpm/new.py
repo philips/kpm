@@ -73,6 +73,12 @@ kpm deploy {name}
 
 
 def new_package(name, dest=".", with_comments=False):
+    if re.match(r"^[a-z0-9_-]+/[a-z0-9_-]+$", name) is None:
+        if re.match(r"^.+?/.+?$", name) is not None:
+            raise ValueError("Package names are restricted to [a-z0-9_-] ")
+        else:
+            raise ValueError("Package '%s' does not match format 'namespace/name'" % (name))
+
     _, app = name.split("/")
     path = os.path.join(dest, name)
     utils.mkdir_p(path)
@@ -88,3 +94,4 @@ def new_package(name, dest=".", with_comments=False):
     manifest.close()
     for directory in DIRECTORIES:
         utils.mkdir_p(os.path.join(path, directory))
+    return path
