@@ -17,7 +17,6 @@ with open(os.path.join(os.path.dirname(__file__), "jsonnet/manifest.jsonnet.j2")
 
 
 def yaml_to_jsonnet(manifestyaml, tla_codes=None):
-    print manifestyaml
     jinja_env = jinja2.Environment()
     jinja_env.filters.update(filters.jinja_filters())
 
