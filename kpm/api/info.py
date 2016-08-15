@@ -1,4 +1,8 @@
-from flask import jsonify, request, Blueprint, current_app
+from flask import (jsonify,
+                   request,
+                   Blueprint,
+                   current_app,
+                   url_for)
 import kpm
 
 
@@ -25,6 +29,24 @@ def pre_request_logging():
 @info_app.route("/version")
 def version():
     return jsonify({"kpm-api": kpm.__version__})
+
+
+@info_app.route("/routes")
+def routes():
+    import urllib
+    output = []
+    for rule in current_app.url_map.iter_rules():
+        options = {}
+        for arg in rule.arguments:
+            options[arg] = "[{0}]".format(arg)
+        methods = ','.join(rule.methods)
+        url = url_for(rule.endpoint, **options)
+        line = urllib.unquote("{:50s} {:20s} {}".format(rule.endpoint, methods, url))
+        output.append(line)
+    lines = []
+    for line in sorted(output):
+        lines.append(line)
+    return jsonify({"routes": lines})
 
 
 @info_app.route("/test_timeout")
