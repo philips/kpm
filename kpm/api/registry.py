@@ -1,9 +1,7 @@
 import yaml
 import json
-from base64 import b64decode
 from flask import jsonify, request, Blueprint, current_app
 from kpm.api.app import getvalues
-from kpm.packager import Package
 import kpm.semver as semver
 
 from kpm.exception import (KpmException,
@@ -61,7 +59,7 @@ def pull(package):
     if 'format' in values and values['format'] == 'json':
         resp = jsonify({"package": package, "kub": packagemodel.blob})
     else:
-        resp = current_app.make_response(b64decode(packagemodel.blob))
+        resp = current_app.make_response(packagemodel.packager.blob)
         resp.headers['Content-Disposition'] = 'filename="%s_%s.tar.gz"' % (packagemodel.package.replace("/", "_"),
                                                                            packagemodel.version)
         resp.mimetype = 'application/x-gzip'
@@ -96,8 +94,7 @@ def list_packages():
 def show_package(package):
     values = getvalues()
     packagemodel = get_package(package, values)
-    package_data = packagemodel.blob
-    p = Package(b64decode(package_data))
+    p = packagemodel.packager
     manifest = yaml.load(p.manifest)
     stable = False
     if 'stable' in values and values['stable'] == 'true':
@@ -110,7 +107,7 @@ def show_package(package):
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
     if 'pull' in values and values['pull'] == 'true':
-        response['kub'] = package_data
+        response['kub'] = p.b64blob
     return jsonify(response)
 
 
@@ -118,7 +115,7 @@ def show_package(package):
 def delete_package(package):
     values = getvalues()
     packagemodel = get_package(package, values)
-    packagemodel.delete()
+    models.Package.delete(packagemodel.package, packagemodel.version)
     return jsonify({"status": "delete", "packge": packagemodel.package, "version": packagemodel.version})
 
 
