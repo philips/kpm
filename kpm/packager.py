@@ -1,3 +1,6 @@
+import base64
+import gzip
+import hashlib
 import logging
 import tarfile
 import glob
@@ -61,16 +64,29 @@ def unpack_kub(kub, dest="."):
 
 
 class Package(object):
-    def __init__(self, blob=None):
+    def __init__(self, blob=None, b64_encoded=True):
         self.files = {}
         self.tar = None
         self.blob = None
+        self.io_file = None
+        self._digest = None
+        self.b64blob = None
         if blob is not None:
-            self.load(blob)
+            self.load(blob, b64_encoded)
 
-    def load(self, blob):
-        self.blob = blob
-        self.tar = tarfile.open(fileobj=io.BytesIO(blob), mode='r:gz')
+    def _load_blob(self, blob, b64_encoded):
+        if b64_encoded:
+            self.b64blob = blob
+            self.blob = base64.b64decode(blob)
+        else:
+            self.b64blob = base64.b64encode(blob)
+            self.blob = blob
+
+    def load(self, blob, b64_encoded=True):
+        self._digest = None
+        self._load_blob(blob, b64_encoded)
+        self.io_file = io.BytesIO(self.blob)
+        self.tar = tarfile.open(fileobj=self.io_file, mode='r:gz')
         for m in self.tar.getmembers():
             tf = self.tar.extractfile(m)
             if tf is not None:
@@ -112,3 +128,12 @@ class Package(object):
             return self.files['manifest.jsonnet']
         else:
             raise RuntimeError("Unknown manifest format")
+
+    @property
+    def digest(self):
+        print "digest"
+        if self._digest is None:
+            self.io_file.seek(0)
+            gunzip = gzip.GzipFile(fileobj=self.io_file, mode='r').read()
+            self._digest = hashlib.sha256(gunzip).hexdigest()
+        return self._digest

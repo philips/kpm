@@ -41,7 +41,7 @@ class KubBase(object):
         self._deploy_resources = resources
         self.namespace = namespace
         result = self._fetch_package()
-        self.package = packager.Package(result)
+        self.package = packager.Package(result, b64_encoded=False)
         if self.namespace:
             variables["namespace"] = self.namespace
         self.manifest = None

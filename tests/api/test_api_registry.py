@@ -1,3 +1,4 @@
+import base64
 import pytest
 import etcd
 import kpm.models as models
@@ -93,22 +94,22 @@ def test_getversion_prerelease(getversions):
     str(models.Package.get_version("ant31/rocketchat", ">=0-")) == "1.8.2-rc2"
 
 
-def test_push_etcd(monkeypatch):
+def test_push_etcd(monkeypatch, package_data):
     def write(path, data, prevExist):
         assert path == "kpm/packages/a/b/releases/4"
         assert data == "value"
         return True
     monkeypatch.setattr("kpm.models.etcd.etcd_client.write", write)
-    p = models.Package('a/b', 4, "value2")
+    p = models.Package('a/b', 4, package_data)
     p._push_etcd("a/b", 4, "value")
 
 
-def test_push_etcd_exist(monkeypatch):
+def test_push_etcd_exist(monkeypatch, package_data):
     def write(path, data, prevExist):
         assert path == "kpm/packages/a/b/releases/4"
         assert data == "value"
         raise etcd.EtcdAlreadyExist
     monkeypatch.setattr("kpm.models.etcd.etcd_client.write", write)
     with pytest.raises(PackageAlreadyExists):
-        p = models.Package('a/b', 4, "value2")
+        p = models.Package('a/b', 4, package_data)
         p._push_etcd("a/b", 4, "value")

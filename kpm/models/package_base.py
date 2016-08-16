@@ -1,24 +1,54 @@
+import datetime
 import semantic_version
+import kpm.packager as packager
 from kpm.semver import last_version, select_version
 from kpm.exception import (InvalidVersion,
+                           PackageAlreadyExists,
                            PackageVersionNotFound,
                            PackageNotFound)
 
 
 class PackageModelBase(object):
-    def __init__(self, package_name, version=None, blob=None):
+    def __init__(self, package_name, version=None, blob=None, data=None):
         self.package = package_name
         self.organization, self.name = package_name.split("/")
         self.version = version
-        self._blob = blob
+        self._data = data
+        self.created_at = None
+        self.packager = None
+        self.blob = blob
 
     @property
     def blob(self):
-        return self._blob
+        return self.packager.b64blob
+
+    @property
+    def digest(self):
+        return self.packager.digest
 
     @blob.setter
     def blob(self, value):
-        self._blob = value
+        if value is not None:
+            self.packager = packager.Package(value)
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = {'created_at': datetime.datetime.utcnow().isoformat()}
+        d = {"package": self.package,
+             "release": self.version,
+             "blob": self.blob,
+             "digest": self.packager.digest}
+
+        self._data.update(d)
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+        self.blob = data['blob']
+        self.created_at = data['created_at']
+        self.version = data['release']
 
     @classmethod
     def check_version(self, version):
@@ -60,11 +90,18 @@ class PackageModelBase(object):
             raise PackageVersionNotFound("No version match '%s' for package '%s'" % (version_query, package),
                                          {"package": package, "version_query": version_query})
 
-        self._blob = self._fetch(package, version)
+        self.data = self._fetch(package, version)
         return self
+
+    @classmethod
+    def isdeleted_release(self, package, version):
+        raise NotImplementedError
 
     def save(self, force=False):
         self.check_version(self.version)
+        if self.isdeleted_release(self.package, self.version) and not force:
+            raise PackageAlreadyExists("Package release %s existed" % self.package,
+                                       {"package": self.package, "version": self.version})
         self._save(force)
 
     def versions(self):
@@ -86,7 +123,8 @@ class PackageModelBase(object):
     def _save(self, force=False):
         raise NotImplementedError
 
-    def delete(self):
+    @classmethod
+    def delete(self, package, version):
         raise NotImplementedError
 
     @classmethod

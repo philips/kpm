@@ -1,0 +1,7 @@
+languages:
+  Python: true
+exclude_paths:
+  - "migrations%2Fmigrate_0.17.0-0.18.0.py"
+# engines:
+#   duplication:
+#     enabled: true
