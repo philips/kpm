@@ -6,7 +6,7 @@ kpmstd {
 
    variables(package, params):: (
    local p = package + {variables: package.variables + std.mergePatch(super.variables, params.variables)};
-     p
+     p.variables
    ),
 
    deploy(dep):: (
