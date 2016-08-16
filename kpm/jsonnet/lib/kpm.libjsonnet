@@ -122,7 +122,7 @@ kpmstd {
 
 
    ###
-   package(p, env):: (
+   package(pack, env):: (
     local default_params = {
        namespace: "default",
        variables: { namespace: default_params.namespace },
@@ -131,16 +131,17 @@ kpmstd {
 
       local params = std.mergePatch(default_params, env);
 
+      local variables = { variables: { namespace: params.namespace } +
+                                     if std.objectHas(pack, "variables") then
+         kpm.variables(pack, params)
+      else
+         params.variables };
+      local p = pack + variables;
+
       local shards = if std.objectHas(p, "shards") then
          { shards: kpm.shards(p.shards, params.shards) }
       else
          { shards: null };
-
-      local variables = { variables: { namespace: params.namespace } +
-                                     if std.objectHas(p, "variables") then
-         kpm.variables(p, params)
-      else
-         params.variables };
 
       local resources = if std.objectHas(p, "resources") then
          { resources: kpm.resources(p.resources, shards.shards, variables.variables, p.package) }
