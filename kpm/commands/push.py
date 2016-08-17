@@ -2,8 +2,7 @@ import os
 import json
 import base64
 import kpm.registry
-import kpm.manifest
-import kpm.manifest_jsonnet
+from kpm.manifest_jsonnet import ManifestJsonnet
 from kpm.packager import pack_kub
 from kpm.commands.command_base import CommandBase
 
@@ -14,7 +13,6 @@ class PushCmd(CommandBase):
 
     def __init__(self, options):
         self.output = options.output
-        self.isjsonnet = options.jsonnet
         self.registry_host = options.registry_host
         self.force = options.force
         self.manifest = None
@@ -29,16 +27,11 @@ class PushCmd(CommandBase):
                             help="push to another organization")
         parser.add_argument("-f", "--force", action='store_true', default=False,
                             help="force push")
-        parser.add_argument('-j', "--jsonnet", action="store_true", default=False,
-                            help="Experimental Jsonnet format")
 
     def _call(self):
         r = kpm.registry.Registry(self.registry_host)
         # @TODO: Override organization
-        if self.isjsonnet:
-            self.manifest = kpm.manifest_jsonnet.ManifestJsonnet()
-        else:
-            self.manifest = kpm.manifest.Manifest()
+        self.manifest = ManifestJsonnet()
         # @TODO: Pack in memory
         kubepath = os.path.join(".", self.manifest.package_name() + "kub.tar.gz")
         pack_kub(kubepath)

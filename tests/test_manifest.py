@@ -1,18 +1,18 @@
 import pytest
-from kpm.manifest import Manifest
+from kpm.manifest_jsonnet import ManifestJsonnet
 
 
 @pytest.fixture()
 def manifest(kubeui_package, package_dir):
-    return Manifest(kubeui_package)
+    return ManifestJsonnet(kubeui_package)
 
 @pytest.fixture()
 def empty_manifest(empty_package_dir):
-    return Manifest(package=None)
+    return ManifestJsonnet(package=None)
 
 @pytest.fixture()
 def bad_manifest():
-    return Manifest(package=None)
+    return ManifestJsonnet(package=None)
 
 
 def test_empty_resources(empty_manifest):
@@ -20,15 +20,15 @@ def test_empty_resources(empty_manifest):
 
 
 def test_empty_variables(empty_manifest):
-    assert empty_manifest.variables == {}
+    assert empty_manifest.variables == {'namespace': 'default'}
 
 
 def test_empty_package(empty_manifest):
-    assert empty_manifest.package == {}
+    assert empty_manifest.package == {'expander': "jinja2"}
 
 
 def test_empty_shards(empty_manifest):
-    assert empty_manifest.shards == []
+    assert empty_manifest.shards is None
 
 
 def test_empty_deploy(empty_manifest):
@@ -44,11 +44,11 @@ def test_kubename(manifest):
 
 
 def test_load_from_path(manifest):
-    m = Manifest()
+    m = ManifestJsonnet()
     assert m == manifest
 
 
 def test_load_bad_manifest(bad_package_dir):
     import yaml
     with pytest.raises(yaml.YAMLError):
-        Manifest(package=None)
+        ManifestJsonnet(package=None)

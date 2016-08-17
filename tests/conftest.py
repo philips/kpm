@@ -27,8 +27,8 @@ def app():
 
 @pytest.fixture(scope='module')
 def jinja_env():
-    import kpm.kub
-    return kpm.kub.jinja_env
+    import kpm.template_filters
+    return kpm.template_filters.jinja_env()
 
 
 @pytest.fixture()

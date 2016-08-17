@@ -13,7 +13,6 @@ import kpm.registry as registry
 import kpm.packager as packager
 from kpm.utils import mkdir_p
 
-# __all__ = ['Kub']
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +164,9 @@ class KubBase(object):
         with tarfile.open(fileobj=output, mode="w:gz") as tar:
             tar.add(source_dir, arcname=os.path.basename(source_dir))
         return output
+
+    def build(self):
+        raise NotImplementedError
 
     def build_tar(self, dest="/tmp"):
         package_json = self.build()

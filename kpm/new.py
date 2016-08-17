@@ -35,7 +35,7 @@ variables: {{}}
 #    sharded: no         # Optional: use the shards to generate this resource
 #    patch:              # Optional: array of 'json-patch'
 #      - {{op: replace, path: /metadata/labels/app-name, value: 'nginx'}}
-resources:
+resources: []
   # - file: {app}-rc.yaml
   #   name: {app}
   #   type: rc

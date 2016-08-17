@@ -19,7 +19,6 @@ class DeployCmd(CommandBase):
         self.api_proxy = options.api_proxy
         self.version = options.version
         self.tmpdir = options.tmpdir
-        self.isjsonnet = options.jsonnet
         self.variables = options.variables
         self.status = None
         super(DeployCmd, self).__init__(options)
@@ -39,8 +38,6 @@ class DeployCmd(CommandBase):
                             help="package VERSION", default=None)
         parser.add_argument("-x", "--variables",
                             help="variables", default=None, action="append")
-        parser.add_argument('-j', "--jsonnet", action="store_true", default=False,
-                            help="Experimental Jsonnet format")
         parser.add_argument("--shards",
                             help="Shards list/dict/count: eg. --shards=5 ; --shards='[{\"name\": 1, \"name\": 2}]'",
                             default=None)
@@ -64,7 +61,6 @@ class DeployCmd(CommandBase):
                                         proxy=self.api_proxy,
                                         variables=variables,
                                         shards=self.shards,
-                                        jsonnet=self.isjsonnet,
                                         fmt=self.output)
 
     def _render_json(self):
