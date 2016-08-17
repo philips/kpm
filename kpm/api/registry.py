@@ -116,7 +116,7 @@ def delete_package(package):
     values = getvalues()
     packagemodel = get_package(package, values)
     models.Package.delete(packagemodel.package, packagemodel.version)
-    return jsonify({"status": "delete", "packge": packagemodel.package, "version": packagemodel.version})
+    return jsonify({"status": "delete", "package": packagemodel.package, "version": packagemodel.version})
 
 
 # CHANNELS

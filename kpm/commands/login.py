@@ -1,3 +1,4 @@
+import json
 import getpass
 import argparse
 import kpm.registry
@@ -15,6 +16,7 @@ class LoginCmd(CommandBase):
         self.password = options.password
         self.email = options.email
         self.user = options.user
+        self.status = None
         super(LoginCmd, self).__init__(options)
 
     @classmethod
@@ -53,15 +55,13 @@ class LoginCmd(CommandBase):
             if p1 != p2:
                 raise argparse.ArgumentError("Error: password mismatch")
             r.signup(user, p1, p2, email)
-            print ' >>> Registration complete'
+            self.status = "Registration complete"
         else:
             r.login(user, p1)
-            print ' >>> Login succeeded'
+            self.status = "Login succeeded"
 
-    # @TODO
     def _render_json(self):
-        pass
+        print json.dumps({"user": self.user, "status": self.status})
 
-    # @TODO
     def _render_console(self):
-        pass
+        print " >>> %s" % self.status
