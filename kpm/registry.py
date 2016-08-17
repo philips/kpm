@@ -135,15 +135,14 @@ class Registry(object):
         return True
 
     def _crud_channel(self, name, channel='', action='get'):
+        if channel is None:
+            channel = ''
         path = "/packages/%s/channels/%s" % (name, channel)
         r = getattr(requests, action)(self._url(path), params={}, headers=self.headers)
         r.raise_for_status()
         return r.json()
 
-    def list_channels(self, name):
-        return self._crud_channel(name)
-
-    def show_channel(self, name, channel):
+    def show_channels(self, name, channel=None):
         return self._crud_channel(name, channel)
 
     def create_channel(self, name, channel):

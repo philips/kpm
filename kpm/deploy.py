@@ -10,8 +10,8 @@ from kpm.display import print_deploy_result
 logger = logging.getLogger(__name__)
 
 
-def output_progress(kubsource, status, fmt="stdout"):
-    if fmt == 'stdout':
+def output_progress(kubsource, status, fmt="text"):
+    if fmt == 'text':
         print " --> %s (%s): %s" % (kubsource.name, kubsource.kind, colorize(status))
 
 
@@ -23,7 +23,7 @@ def _process(package_name,
              dry=False,
              endpoint=None,
              action="create",
-             fmt="stdout",
+             fmt="text",
              proxy=None,
              variables=None,
              shards=None,
@@ -43,7 +43,7 @@ def _process(package_name,
     mkdir_p(dest)
     table = []
     results = []
-    if fmt == "stdout":
+    if fmt == "text":
         print "%s %s " % (action, package_name)
     i = 0
     for package in packages["deploy"]:
@@ -51,7 +51,7 @@ def _process(package_name,
         pname = package["package"]
         version = package["version"]
         namespace = package["namespace"]
-        if fmt == "stdout":
+        if fmt == "text":
             print "\n %02d - %s:" % (i, package["package"])
         for resource in package["resources"]:
             body = resource["body"]
@@ -61,7 +61,7 @@ def _process(package_name,
                 f.write(body)
             kubresource = Kubernetes(namespace=namespace, body=body, endpoint=endpoint, proxy=proxy)
             status = getattr(kubresource, action)(force=force, dry=dry)
-            if fmt == "stdout":
+            if fmt == "text":
                 output_progress(kubresource, status)
             result_line = OrderedDict([("package", pname),
                                        ("version", version),
@@ -74,13 +74,13 @@ def _process(package_name,
             if status != 'ok' and action == 'create':
                 kubresource.wait(3)
             results.append(result_line)
-            if fmt == "stdout":
+            if fmt == "text":
                 header = ["package", "version", "kind", "name",  "namespace", "status"]
                 display_line = []
                 for k in header:
                     display_line.append(result_line[k])
                 table.append(display_line)
-    if fmt == "stdout":
+    if fmt == "text":
         print_deploy_result(table)
     return results
 
