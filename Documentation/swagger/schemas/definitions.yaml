@@ -1,0 +1,167 @@
+definitions:
+  Channel:
+    type: object
+    title: Channel
+    description: 'Organize releases into channel, eg: dev/beta/stable'
+    properties:
+      channel:
+        type: string
+        title: Channel name
+        description: Channel name
+      current:
+        type: string
+        title: Latest release
+        description: Current/latest release in the channel. The channel returns this release by default
+      releases:
+        type: array
+        title: Releases
+        description: All availables releases in the channel
+        items:
+          type: string
+          title: Release name
+          description: Release name
+  Channels:
+    type: array
+    title: Channels
+    description: "List a package's channels"
+    items:
+      $ref: "#/definitions/Channel"
+
+  Version:
+    type: object
+    properties:
+      kpm-api:
+        type: string
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: http status code
+        title: http-code
+      message:
+        type: string
+        description: "error message"
+      details:
+        type: object
+        description: error extra data
+
+  Packages:
+    type: array
+    title: Packages
+    description: List packages
+    items:
+      $ref: "#/definitions/Package"
+
+  Package:
+    type: object
+    title: Package
+    description: Package object
+    properties:
+      available_versions:
+        type: array
+        title: available-releases
+        description: All available releases
+        items:
+          type: string
+          title: release-name
+          description: Release name
+      channels:
+        title: channels
+        description: List channels
+        type: array
+        items:
+          $ref: "#/definitions/Channel"
+      created_at:
+        type: string
+        title: created_at
+        description: Package creation date
+      manifest:
+        type: string
+        title: manifest
+        description: "Package manifest file"
+      name:
+        type: string
+        title: package-name
+        description: Package name
+      version:
+        type: string
+        title: package-version
+        description: Package version
+
+  PackageDeployment:
+    type: object
+    title: PackageDeployment.
+    description: Resolved package
+    properties:
+      deploy:
+        type: array
+        title: packages
+        description: Package dependencies
+        items:
+          type: object
+          title: dependency
+          description: Dependent package
+          properties:
+            namespace:
+              type: string
+              title: namespace
+              description: Kubernetes namespace where to deploy the current dependency
+            package:
+              type: string
+              title: dependency-name.
+              description: Dependency package-name
+            resources:
+              type: array
+              title: resources
+              description: Kubernetes resources to manage
+              items:
+                type: object
+                title: resource
+                description: Kubernetes resource description
+                properties:
+                  body:
+                    type: string
+                    title: k8s-resource.
+                    description: Kubernetes resource body
+                  endpoint:
+                    type: string
+                    title: k8s-endpoint
+                    description: Kubernetes endpoint to manage the resource
+                  file:
+                    type: string
+                    title: file-name.
+                    description: Optional file-name
+                  hash:
+                    type: string
+                    title: digest
+                    description: Resource sha256 digest
+                  kind:
+                    type: string
+                    title: kind
+                    description: Resource type
+                  name:
+                    type: string
+                    title: name
+                    description: Resource name
+                  protected:
+                    type: boolean
+                    title: Protected
+                    description: Resource annotated as protected
+            version:
+              type: string
+              title: dependency-version.
+              description: Dependency package version
+      package:
+        type: object
+        title: package
+        description: Package to deploy
+        properties:
+          name:
+            type: string
+            title: package-name
+            description: Package name
+          version:
+            type: string
+            title: package-version
+            description: Package release name

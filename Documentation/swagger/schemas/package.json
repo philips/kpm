@@ -1,0 +1,35 @@
+  Package:
+    type: object
+    title: Package
+    description: Package object
+    properties:
+      available_versions:
+        type: array
+        title: available-releases
+        description: All available releases
+        items:
+          type: string
+          title: release-name
+          description: Release name
+      channels:
+        title: channels
+        description: List channels
+        type: array
+        items:
+          $ref: "#/definitions/Channel"
+      created_at:
+        type: string
+        title: created_at
+        description: Package creation date
+      manifest:
+        type: string
+        title: manifest
+        description: "Package manifest file"
+      name:
+        type: string
+        title: package-name
+        description: Package name
+      version:
+        type: string
+        title: package-version
+        description: Package version

@@ -1,0 +1,76 @@
+  PackageDeployment:
+    type: object
+    title: PackageDeployment.
+    description: Resolved package
+    properties:
+      deploy:
+        type: array
+        title: packages
+        description: Package dependencies
+        items:
+          type: object
+          title: dependency
+          description: Dependent package
+          properties:
+            namespace:
+              type: string
+              title: namespace
+              description: Kubernetes namespace where to deploy the current dependency
+            package:
+              type: string
+              title: dependency-name.
+              description: Dependency package-name
+            resources:
+              type: array
+              title: resources
+              description: Kubernetes resources to manage
+              items:
+                type: object
+                title: resource
+                description: Kubernetes resource description
+                properties:
+                  body:
+                    type: string
+                    title: k8s-resource.
+                    description: Kubernetes resource body
+                  endpoint:
+                    type: string
+                    title: k8s-endpoint
+                    description: Kubernetes endpoint to manage the resource
+                  file:
+                    type: string
+                    title: file-name.
+                    description: Optional file-name
+                  hash:
+                    type: string
+                    title: digest
+                    description: Resource sha256 digest
+                  kind:
+                    type: string
+                    title: kind
+                    description: Resource type
+                  name:
+                    type: string
+                    title: name
+                    description: Resource name
+                  protected:
+                    type: boolean
+                    title: Protected
+                    description: Resource annotated as protected
+            version:
+              type: string
+              title: dependency-version.
+              description: Dependency package version
+      package:
+        type: object
+        title: package
+        description: Package to deploy
+        properties:
+          name:
+            type: string
+            title: package-name
+            description: Package name
+          version:
+            type: string
+            title: package-version
+            description: Package release name

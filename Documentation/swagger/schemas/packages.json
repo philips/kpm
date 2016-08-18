@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Root schema.",
+  "description": "An explanation about the purpose of this instance.",
+  "properties": {
+    "available_versions": {
+      "type": "array",
+      "title": "Available_versions schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "items": {
+        "type": "string",
+        "title": "0 schema.",
+        "description": "An explanation about the purpose of this instance."
+      }
+    },
+    "channels": {
+      "type": "array",
+      "title": "Channels schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "items": {
+        "type": "object",
+        "title": "0 schema.",
+        "description": "An explanation about the purpose of this instance.",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel schema.",
+            "description": "An explanation about the purpose of this instance."
+          },
+          "current": {
+            "type": "string",
+            "title": "Current schema.",
+            "description": "An explanation about the purpose of this instance."
+          },
+          "releases": {
+            "type": "array",
+            "title": "Releases schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "items": {
+              "type": "string",
+              "title": "0 schema.",
+              "description": "An explanation about the purpose of this instance."
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "title": "Created_at schema.",
+      "description": "An explanation about the purpose of this instance."
+    },
+    "manifest": {
+      "type": "string",
+      "title": "Manifest schema.",
+      "description": "An explanation about the purpose of this instance."
+    },
+    "name": {
+      "type": "string",
+      "title": "Name schema.",
+      "description": "An explanation about the purpose of this instance."
+    },
+    "version": {
+      "type": "string",
+      "title": "Version schema.",
+      "description": "An explanation about the purpose of this instance."
+    }
+  }
+}

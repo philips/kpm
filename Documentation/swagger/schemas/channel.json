@@ -1,0 +1,21 @@
+  Channel:
+    type: object
+    title: Channel
+    description: 'Organize releases into channel, eg: dev/beta/stable'
+    properties:
+      channel:
+        type: string
+        title: Channel name
+        description: Channel name
+      current:
+        type: string
+        title: Latest release
+        description: Current/latest release in the channel. The channel returns this release by default
+      releases:
+        type: array
+        title: Releases
+        description: All availables releases in the channel
+        items:
+          type: string
+          title: Release name
+          description: Release name

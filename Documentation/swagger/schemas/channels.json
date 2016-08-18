@@ -1,0 +1,10 @@
+  Channels:
+    type: object
+    title: Channels
+    description: List a package's channels
+    properties:
+      channels:
+        type: array
+        title: Channels
+        items:
+          $ref: "#/definitions/Channel"
