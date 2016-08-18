@@ -95,14 +95,15 @@ def show_package(package):
     values = getvalues()
     packagemodel = get_package(package, values)
     p = packagemodel.packager
-    manifest = yaml.load(p.manifest)
+    manifest = p.manifest
     stable = False
     if 'stable' in values and values['stable'] == 'true':
         stable = True
 
     response = {"manifest": manifest,
-                "version": manifest['package']['version'],
+                "version": packagemodel.version,
                 "name":  package,
+                "created_at": packagemodel.created_at,
                 "channels": models.Channel.all(package).values(),
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
