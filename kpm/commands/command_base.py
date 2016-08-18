@@ -3,7 +3,7 @@ class CommandBase(object):
     help_message = 'describe the command'
 
     def __init__(self, args_options):
-        self.output = 'text'
+        pass
 
     def render(self):
         if self.output == 'json':
