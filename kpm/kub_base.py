@@ -87,6 +87,7 @@ class KubBase(object):
     def _fetch_package(self):
         parse = urlparse(self._deploy_name)
         if parse.scheme in ["http", "https"]:
+            # @TODO
             pass
         elif parse.scheme == "file":
             parts = parse.path.split("/")

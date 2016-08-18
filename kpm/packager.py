@@ -131,7 +131,6 @@ class Package(object):
 
     @property
     def digest(self):
-        print "digest"
         if self._digest is None:
             self.io_file.seek(0)
             gunzip = gzip.GzipFile(fileobj=self.io_file, mode='r').read()
