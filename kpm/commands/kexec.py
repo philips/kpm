@@ -13,6 +13,7 @@ class ExecCmd(CommandBase):
         self.kind = options.kind
         self.container = options.container
         self.namespace = options.namespace
+        self.resource = options.name
         self.cmd = options.cmd
         self.result = None
 
@@ -30,7 +31,7 @@ class ExecCmd(CommandBase):
         parser.add_argument('-c', '--container', nargs='?', help="container name", default=None)
 
     def _call(self):
-        c = KubernetesExec(self.name,
+        c = KubernetesExec(self.resource,
                            cmd=" ".join(self.cmd),
                            namespace=self.namespace,
                            container=self.container,
