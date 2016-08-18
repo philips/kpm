@@ -1,7 +1,6 @@
 import json
 import kpm.registry
-import kpm.kub_jsonnet
-import kpm.kub
+from kpm.kub_jsonnet import KubJsonnet
 from kpm.utils import parse_cmdline_variables
 from kpm.commands.command_base import CommandBase
 
@@ -15,7 +14,6 @@ class GenerateCmd(CommandBase):
         self.package = options.pull[0]
         self.version = options.version
         self.namespace = options.namespace
-        self.isjsonnet = options.jsonnet
         self.variables = options.variables
         self.registry_host = options.registry_host
         self.kub = None
@@ -29,7 +27,6 @@ class GenerateCmd(CommandBase):
         parser.add_argument("-x", "--variables",
                             help="variables", default=None, action="append")
         parser.add_argument('-p', "--pull", nargs=1, help="Fetch package from the registry")
-        parser.add_argument('-j', "--jsonnet", action="store_true", default=False, help="Experimental Jsonnet")
         parser.add_argument("-H", "--registry-host", nargs="?", default=kpm.registry.DEFAULT_REGISTRY,
                             help='registry API url')
         parser.add_argument("-v", "--version", nargs="?", default=None,
@@ -44,13 +41,8 @@ class GenerateCmd(CommandBase):
             variables = parse_cmdline_variables(self.variables)
 
         variables['namespace'] = namespace
-        if self.isjsonnet is True:
-            kubClass = kpm.kub_jsonnet.KubJsonnet
-        else:
-            kubClass = kpm.kub.Kub
-
-        k = kubClass(name, endpoint=self.registry_host,
-                     variables=variables, namespace=namespace, version=version)
+        k = KubJsonnet(name, endpoint=self.registry_host,
+                       variables=variables, namespace=namespace, version=version)
         filename = "%s_%s.tar.gz" % (k.name.replace("/", "_"), k.version)
         with open(filename, 'wb') as f:
             f.write(k.build_tar("."))

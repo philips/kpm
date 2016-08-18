@@ -66,11 +66,10 @@ class Registry(object):
 
     def generate(self, name, namespace=None,
                  variables=None, version=None, tarball=False,
-                 shards=None, jsonnet=False):
+                 shards=None):
         path = "/packages/%s/generate" % name
         params = {}
         body = {}
-        params['jsonnet'] = str(jsonnet).lower()
         if tarball:
             params['tarball'] = 'true'
         if version:

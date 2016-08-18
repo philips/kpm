@@ -3,12 +3,12 @@ import os.path
 import yaml
 import json
 from collections import OrderedDict
+import jsonpatch
 import kpm.manifest_jsonnet as manifest
 from kpm.kubernetes import get_endpoint
 from kpm.utils import convert_utf8
 from kpm.kub_base import KubBase
 
-# __all__ = ['Kub']
 
 logger = logging.getLogger(__name__)
 
@@ -96,3 +96,18 @@ class KubJsonnet(KubBase):
         return {"deploy": result,
                 "package": {"name": self.name,
                             "version": self.version}}
+
+    def _apply_patches(self, resources):
+        for _, resource in resources.iteritems():
+            if self.namespace:
+                if 'namespace' in resource['value']['metadata']:
+                    op = 'replace'
+                else:
+                    op = 'add'
+                resource['patch'].append({"op": op, "path": "/metadata/namespace", "value": self.namespace})
+
+            if len(resource['patch']):
+                patch = jsonpatch.JsonPatch(resource['patch'])
+                result = patch.apply(resource['value'])
+                resource['value'] = result
+        return resources

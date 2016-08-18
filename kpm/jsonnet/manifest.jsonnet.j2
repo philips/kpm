@@ -23,6 +23,10 @@ kpm.package({
 ],
 {% endif %}
 
+{% if manifest.deploy is defined %}
  deploy: {{manifest.deploy}}
+{% else %}
+  deploy: [],
+{% endif %}
 
 }, params)

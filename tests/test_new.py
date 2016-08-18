@@ -1,6 +1,7 @@
 import pytest
 import os
 from kpm.new import new_package
+import kpm.manifest_jsonnet
 
 
 @pytest.fixture()
@@ -33,19 +34,17 @@ def test_files_created(new):
 
 
 def test_load_manifest(new, monkeypatch, fake_home):
-    import kpm.manifest
     name = "organization/newpackage"
     monkeypatch.chdir(os.path.join(str(fake_home), name))
 
-    m = kpm.manifest.Manifest()
+    m = kpm.manifest_jsonnet.ManifestJsonnet()
     assert m.package["name"] == "organization/newpackage"
     assert m.deploy == [{'name': "$self"}]
 
 
 def test_load_manifest_comments(new_with_comments, monkeypatch, fake_home):
-    import kpm.manifest
     name = "organization/newpackage2"
     monkeypatch.chdir(os.path.join(str(fake_home), name))
-    m = kpm.manifest.Manifest()
+    m = kpm.manifest_jsonnet.ManifestJsonnet()
     assert m.package["name"] == name
     assert m.deploy == [{'name': "$self"}]

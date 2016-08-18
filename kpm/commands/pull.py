@@ -2,8 +2,7 @@ import os
 import json
 import kpm.registry
 import kpm.packager
-import kpm.manifest
-import kpm.manifest_jsonnet
+from kpm.manifest_jsonnet import ManifestJsonnet
 from kpm.commands.command_base import CommandBase
 
 
@@ -17,7 +16,6 @@ class PullCmd(CommandBase):
         self.registry_host = options.registry_host
         self.version = options.version
         self.dest = options.directory
-        self.isjsonnet = options.jsonnet
         self.path = None
         super(PullCmd, self).__init__(options)
 
@@ -36,8 +34,6 @@ class PullCmd(CommandBase):
                             help="package VERSION", default=None)
         parser.add_argument("-x", "--variables",
                             help="variables", default=None, action="append")
-        parser.add_argument('-j', "--jsonnet", action="store_true", default=False,
-                            help="Experimental Jsonnet format")
         parser.add_argument("--shards",
                             help="Shards list/dict/count: eg. --shards=5 ; --shards='[{\"name\": 1, \"name\": 2}]'",
                             default=None)
@@ -50,11 +46,7 @@ class PullCmd(CommandBase):
         r = kpm.registry.Registry(self.registry_host)
         result = r.pull(self.package, version=self.version)
         p = kpm.packager.Package(result)
-        if self.isjsonnet:
-            manifestClass = kpm.manifest_jsonnet.ManifestJsonnet
-        else:
-            manifestClass = kpm.manifest.Manifest
-        self.path = os.path.join(self.dest, manifestClass(p).package_name())
+        self.path = os.path.join(self.dest, ManifestJsonnet(p).package_name())
         p.extract(self.path)
 
     def _render_json(self):

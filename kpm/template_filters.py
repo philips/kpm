@@ -1,3 +1,4 @@
+import jinja2
 import string
 import yaml
 import json
@@ -104,13 +105,17 @@ def gen_privatekey(keytype='rsa', key='', seed=None):
     return all_privates[k][keytype]
 
 
-def jinja_template(val, env=None):
-    import jinja2
+def jinja_env():
     from kpm.template_filters import jinja_filters
+    jinjaenv = jinja2.Environment()
+    jinjaenv.filters.update(jinja_filters())
+    return jinjaenv
+
+
+def jinja_template(val, env=None):
     from kpm.utils import convert_utf8
-    jinja_env = jinja2.Environment()
-    jinja_env.filters.update(jinja_filters())
-    template = jinja_env.from_string(val)
+    jinjaenv = jinja_env()
+    template = jinjaenv.from_string(val)
     if env is not None:
         variables = convert_utf8(json.loads(env))
     return template.render(variables)
