@@ -33,7 +33,7 @@ spec:
           resources:
             limits:
               cpu: 200m
-              memory: 200Mi
+              memory: 250Mi
           command:
             - gunicorn
             - kpm.api.wsgi:app
@@ -42,7 +42,7 @@ spec:
             - --threads
             - "3"
             - -w
-            - "1"
+            - "2"
           ports:
             - name: kpm-registry
               protocol: TCP
