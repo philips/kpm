@@ -5,7 +5,6 @@ import kpm.semver as semver
 
 class ChannelBase(object):
     def __init__(self, name, package):
-
         self.package = package
         self.name = name
         self._iscreated = None
@@ -31,7 +30,7 @@ class ChannelBase(object):
         for channel in channel_names:
             c = self(channel, package)
             releases = c.releases()
-            result[str(channel)] = {"releases": releases, "current": c.current_release(releases)}
+            result[str(channel)] = {"releases": releases, "channel": channel, "current": c.current_release(releases)}
         return result
 
     @classmethod

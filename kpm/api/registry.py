@@ -103,7 +103,7 @@ def show_package(package):
     response = {"manifest": manifest,
                 "version": manifest['package']['version'],
                 "name":  package,
-                "channels": models.Channel.all(package),
+                "channels": models.Channel.all(package).values(),
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
     if 'pull' in values and values['pull'] == 'true':
@@ -111,18 +111,10 @@ def show_package(package):
     return jsonify(response)
 
 
-@registry_app.route("/api/v1/packages/<path:package>", methods=['DELETE'], strict_slashes=False)
-def delete_package(package):
-    values = getvalues()
-    packagemodel = get_package(package, values)
-    models.Package.delete(packagemodel.package, packagemodel.version)
-    return jsonify({"status": "delete", "package": packagemodel.package, "version": packagemodel.version})
-
-
 # CHANNELS
 @registry_app.route("/api/v1/packages/<path:package>/channels", methods=['GET'], strict_slashes=False)
 def list_channels(package):
-    channels = models.Channel.all(package)
+    channels = models.Channel.all(package).values()
     return jsonify({"channels": channels, 'package': package})
 
 
@@ -130,7 +122,7 @@ def list_channels(package):
 def show_channel(package, channel):
     c = models.Channel(channel, package)
     r = c.releases()
-    channels = {channel: {"releases": r, "current": c.current_release(r)}}
+    channels = [{"releases": r, "channel": channel, "current": c.current_release(r)}]
     return jsonify({"channels": channels, 'package': package})
 
 
@@ -164,3 +156,12 @@ def delete_channel(package, name):
     channel = models.Channel(name, package)
     channel.delete()
     return jsonify({"channel": channel.name, "package": package, "action": 'delete'})
+
+
+@registry_app.route("/api/v1/packages/<string:orga>/<string:pname>", methods=['DELETE'], strict_slashes=False)
+def delete_package(orga, pname):
+    package = "%s/%s" % (orga, pname)
+    values = getvalues()
+    packagemodel = get_package(package, values)
+    models.Package.delete(packagemodel.package, packagemodel.version)
+    return jsonify({"status": "delete", "package": packagemodel.package, "version": packagemodel.version})
