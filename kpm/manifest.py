@@ -35,3 +35,10 @@ class ManifestBase(dict):
     def package_name(self):
         package = ("%s_%s" % (self.kubname(), self.package['version']))
         return package
+
+    def to_dict(self):
+        return ({
+            "package": self.package,
+            "variables": self.variables,
+            "resources": self.resources,
+            "deploy": self.deploy})

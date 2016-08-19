@@ -1,0 +1,542 @@
+swagger: "2.0"
+info:
+  description: |
+    This is a sample server Petstore server.
+
+    [Learn about Swagger](http://swagger.io) or join the IRC channel `#swagger` on irc.freenode.net.
+
+    For this sample, you can use the api key `special-key` to test the authorization filters
+  version: "0.20.0"
+  title: Swagger Petstore
+  termsOfService: http://
+  contact:
+    name: antoine.legrand@coreos.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: kpm.kubespray.io
+basePath: /v2
+schemes:
+  - http
+paths:
+  /packages:
+    post:
+      deprecated: true
+      tags:
+        - package
+        - registry
+      summary: Push new package release to the registry
+      description: ""
+      operationId: createPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: force
+          description: Force push the release (if allowed)
+          required: false
+          type: boolean
+          default: false
+
+        - in: body
+          name: body
+          description: Package object to be added to the registry
+          required: true
+          schema:
+            $ref: "#/definitions/PostPackage"
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found (if force=true)
+          schema:
+            $ref: "#/definitions/Error"
+        "409":
+          description: Package already exists
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to create the package
+          schema:
+            $ref: "#/definitions/Error"
+
+    get:
+      tags:
+        - package
+        - registry
+      summary: List packages
+      description: ""
+      operationId: listPackages
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: organization
+          description: "Filter by organization"
+          required: false
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Packages"
+
+  /packages/{package}:
+    get:
+      tags:
+        - registry
+        - package
+      summary: Show a package
+      description: ""
+      operationId: showPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - registry
+        - package
+      summary: Show a package
+      description: ""
+      operationId: deletePackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /packages/{package}/pull:
+    get:
+      tags:
+        - registry
+        - package
+      summary: Show a package
+      description: ""
+      operationId: pullPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /packages/{package}/tree:
+    get:
+      tags:
+        - registry
+        - package
+      summary: Show a package
+      description: ""
+      operationId: treePackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /packages/{package}/file/{filepath}:
+    get:
+      tags:
+        - registry
+        - package
+      summary: Show a package
+      description: ""
+      operationId: filePackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+
+        - in: path
+          name: filepath
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Package"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /deployments/{package}:
+    post:
+      tags:
+        - deployments
+      summary: Deploy a package server-side
+      description: ""
+      operationId: deployPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/DeployResult"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+    delete:
+      tags:
+        - deployments
+      summary: Uninstall a package server-side
+      description: ""
+      operationId: uninstallPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/DeployResult"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+
+  Channel:
+    type: object
+    title: Channel
+    description: 'Organize releases into channel, eg: dev/beta/stable'
+    properties:
+      channel:
+        type: string
+        title: Channel name
+        description: Channel name
+      current:
+        type: string
+        title: Latest release
+        description: Current/latest release in the channel. The channel returns this release by default
+      releases:
+        type: array
+        title: Releases
+        description: All availables releases in the channel
+        items:
+          type: string
+          title: Release name
+          description: Release name
+
+  Version:
+    type: object
+    properties:
+      kpm-api:
+        type: string
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: http status code
+        title: http-code
+      message:
+        type: string
+        description: "error message"
+      details:
+        type: object
+        description: error extra data
+
+  Packages:
+    type: array
+    title: Packages
+    description: List packages
+    items:
+      $ref: "#/definitions/Package"
+
+  Package:
+    type: object
+    title: Package
+    description: Package object
+    properties:
+      available_versions:
+        type: array
+        title: available-releases
+        description: All available releases
+        items:
+          type: string
+          title: release-name
+          description: Release name
+      channels:
+        title: channels
+        description: List channels
+        type: array
+        items:
+          $ref: "#/definitions/Channel"
+      created_at:
+        type: string
+        title: created_at
+        description: Package creation date
+      manifest:
+        type: string
+        title: manifest
+        description: "Package manifest file"
+      name:
+        type: string
+        title: package-name
+        description: Package name
+      version:
+        type: string
+        title: package-version
+        description: Package version
+
+  DeployResult:
+    type: object
+    title: deploy-result
+    description: States of the package / deployment
+    properties:
+      result:
+        type: array
+        title: result
+        description: result
+        items:
+          type: object
+          title: resource-state
+          description: Information about the resource state in the cluster
+          properties:
+            package:
+              type: string
+              title: package-name.
+              description: Package containing the resource
+            version:
+              type: string
+              title: release
+              description: Package release name
+            kind:
+              type: string
+              title: resource-kind
+              description: Kubernetes resource kind
+            dry:
+              type: boolean
+              title: dry
+              description: "Indicate a dry-run: no changes performed"
+            name:
+              type: string
+              title: resource-name
+              description: Kubernetes resource name
+            namespace:
+              type: string
+              title: namespace
+              description: Kubernetes namespace
+            status:
+              type: string
+              title: status
+              description: Action and status of the resource ('created/updated/deleted/absent/ok')
+
+  PostPackage:
+    type: object
+    title: Package
+    description: Package object
+    properties:
+      blob:
+        type: string
+        title: blob
+        description: "Package blob: a tar.gz in b64-encoded"
+        #required: true
+      package:
+        type: string
+        title: package-name
+        description: Package name
+        #required: true
+      version:
+        type: string
+        title: package-version
+        description: Package version
+        #required: true
+
+  PackageBuild:
+    type: object
+    title: PackageBuild.
+    description: Resolved package
+    properties:
+      deploy:
+        type: array
+        title: packages
+        description: Package dependencies
+        items:
+          type: object
+          title: dependency
+          description: Dependent package
+          properties:
+            namespace:
+              type: string
+              title: namespace
+              description: Kubernetes namespace where to deploy the current dependency
+            package:
+              type: string
+              title: dependency-name.
+              description: Dependency package-name
+            version:
+              type: string
+              title: dependency-version.
+              description: Dependency package version
+            resources:
+              type: array
+              title: resources
+              description: Kubernetes resources to manage
+              items:
+                type: object
+                title: resource
+                description: Kubernetes resource description
+                properties:
+                  body:
+                    type: string
+                    title: k8s-resource.
+                    description: Kubernetes resource body
+                  endpoint:
+                    type: string
+                    title: k8s-endpoint
+                    description: Kubernetes endpoint to manage the resource
+                  file:
+                    type: string
+                    title: file-name.
+                    description: Optional file-name
+                  hash:
+                    type: string
+                    title: digest
+                    description: Resource sha256 digest
+                  kind:
+                    type: string
+                    title: kind
+                    description: Resource type
+                  name:
+                    type: string
+                    title: name
+                    description: Resource name
+                  protected:
+                    type: boolean
+                    title: Protected
+                    description: Resource annotated as protected
+
+      package:
+        type: object
+        title: package
+        description: Package to deploy
+        properties:
+          name:
+            type: string
+            title: package-name
+            description: Package name
+          version:
+            type: string
+            title: package-version
+            description: Package release name

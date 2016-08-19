@@ -105,3 +105,9 @@ class ChannelBase(object):
         else:
             raise ChannelAlreadyExists("Realease '%s' exists already in channel '%s'" % (version, channel),
                                        {'package': package, 'channel': channel, 'version': version})
+
+    def to_dict(self):
+        r = self.releases()
+        return ({"releases": r,
+                 "channel": self.name,
+                 "current": self.current_release(r)})

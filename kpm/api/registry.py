@@ -1,4 +1,3 @@
-import yaml
 import json
 from flask import jsonify, request, Blueprint, current_app
 from kpm.api.app import getvalues
@@ -95,14 +94,15 @@ def show_package(package):
     values = getvalues()
     packagemodel = get_package(package, values)
     p = packagemodel.packager
-    manifest = yaml.load(p.manifest)
+    manifest = p.manifest
     stable = False
     if 'stable' in values and values['stable'] == 'true':
         stable = True
 
     response = {"manifest": manifest,
-                "version": manifest['package']['version'],
+                "version": packagemodel.version,
                 "name":  package,
+                "created_at": packagemodel.created_at,
                 "channels": models.Channel.all(package).values(),
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
@@ -115,31 +115,31 @@ def show_package(package):
 @registry_app.route("/api/v1/packages/<path:package>/channels", methods=['GET'], strict_slashes=False)
 def list_channels(package):
     channels = models.Channel.all(package).values()
-    return jsonify({"channels": channels, 'package': package})
+    resp = current_app.make_response(json.dumps(channels))
+    resp.mimetype = 'application/json'
+    return resp
 
 
-@registry_app.route("/api/v1/packages/<path:package>/channels/<string:channel>", methods=['GET'], strict_slashes=False)
-def show_channel(package, channel):
-    c = models.Channel(channel, package)
-    r = c.releases()
-    channels = [{"releases": r, "channel": channel, "current": c.current_release(r)}]
-    return jsonify({"channels": channels, 'package': package})
+@registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>", methods=['GET'], strict_slashes=False)
+def show_channel(package, name):
+    c = models.Channel(name, package)
+    return jsonify(c.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
                     methods=['POST'], strict_slashes=False)
 def add_channel_release(package, name, release):
     channel = models.Channel(name, package)
-    r = channel.add_release(release)
-    return jsonify({"channel": channel.name, "package": package,
-                    "release": release, "created_at": r['created_at'], 'action': 'create'})
+    channel.add_release(release)
+    return jsonify(channel.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
                     methods=['DELETE'], strict_slashes=False)
 def delete_channel_release(package, name, release):
     channel = models.Channel(name, package)
-    return jsonify({"channel": channel.name, "package": package, "release": release, "action": 'delete'})
+    channel.remove_release(release)
+    return jsonify(channel.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
@@ -147,7 +147,7 @@ def delete_channel_release(package, name, release):
 def create_channel(package, name):
     channel = models.Channel(name, package)
     channel.save()
-    return show_channel(package, name)
+    return jsonify(channel.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
