@@ -14,10 +14,12 @@ class Config(object):
     KPM_API_BUILDER = 'true'
     KPM_API_REGISTRY = 'true'
 
+
 class ProductionConfig(Config):
     """ Production configuration """
     KPM_URI = 'https://api.kpm.sh'
     KPM_BACKEND = 'false'
+
 
 class DevelopmentConfig(Config):
     """ Development configuration """

@@ -24,8 +24,8 @@ def create_app():
     from kpm.api.builder import builder_app
     from kpm.api.info import info_app
     from kpm.api.registry import registry_app
-    from kpm.api.proxy import proxy_app
     from kpm.api.deployment import deployment_app
+
     if app.config['KPM_API_BUILDER'] == "true":
         app.register_blueprint(builder_app)
     app.register_blueprint(info_app)
@@ -33,7 +33,6 @@ def create_app():
         app.register_blueprint(registry_app)
     if app.config['KPM_API_BACKEND'] == "true":
         app.register_blueprint(deployment_app)
-    # app.register_blueprint(proxy_app, url_prefix="/proxy")
     init_logging(app.logger, loglevel='INFO')
     app.logger.info("Start service")
     return app

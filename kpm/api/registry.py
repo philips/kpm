@@ -1,4 +1,3 @@
-import yaml
 import json
 from flask import jsonify, request, Blueprint, current_app
 from kpm.api.app import getvalues
@@ -132,8 +131,7 @@ def show_channel(package, name):
 def add_channel_release(package, name, release):
     channel = models.Channel(name, package)
     channel.add_release(release)
-    return jsonify(c.to_dict())
-
+    return jsonify(channel.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
@@ -141,7 +139,7 @@ def add_channel_release(package, name, release):
 def delete_channel_release(package, name, release):
     channel = models.Channel(name, package)
     channel.remove_release(release)
-    return jsonify(c.to_dict())
+    return jsonify(channel.to_dict())
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
