@@ -16,7 +16,7 @@ def _check_kub(path):
     for f in KUBEUI_FILES:
         assert os.path.exists(os.path.join(str(path), f))
     assert os.path.exists(os.path.join(str(path), "templates/another_file_to_ignore.cfg")) is False
-    assert os.path.exists(os.path.join(str(path), "file_to_ignore.yaml")) is False
+    assert os.path.exists(os.path.join(str(path), "file_to_ignore")) is False
 
 
 def test_pack_kub_with_authorized_only(pack_tar, tmpdir):

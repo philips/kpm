@@ -25,9 +25,11 @@ logger = logging.getLogger(__name__)
 #
 AUTHORIZED_FILES = ["*.libjsonnet",
                     "*.jsonnet",
+                    "*.yaml",
                     "README.md",
-                    "manifest.yaml",
                     "LICENSE",
+                    "AUTHORS",
+                    "NOTICE",
                     "deps/*.kub"]
 
 
