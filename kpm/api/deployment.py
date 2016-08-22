@@ -53,13 +53,3 @@ def remove(package):
 def deploy(package):
     r = _cmd('deploy', package)
     return jsonify({"result": r})
-
-
-@deployment_app.route("/api/v1/deployments/<path:package>", methods=['GET'], strict_slashes=False)
-def show(package):
-    pass
-
-
-@deployment_app.route("/api/v1/deployments", methods=['GET'], strict_slashes=False)
-def list():
-    pass
