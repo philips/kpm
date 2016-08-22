@@ -1,13 +1,9 @@
 swagger: "2.0"
 info:
   description: |
-    This is a sample server Petstore server.
-
-    [Learn about Swagger](http://swagger.io) or join the IRC channel `#swagger` on irc.freenode.net.
-
-    For this sample, you can use the api key `special-key` to test the authorization filters
+    KPM API documentation
   version: "0.20.0"
-  title: Swagger Petstore
+  title: KPM API
   termsOfService: http://
   contact:
     name: antoine.legrand@coreos.com
@@ -15,16 +11,32 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 host: kpm.kubespray.io
-basePath: /v2
+basePath: /
 schemes:
-  - http
+  - https
 paths:
-  /packages:
+
+  /api/v1/version:
+    get:
+      tags:
+        - info
+      summary: Display api version
+      description: ""
+      operationId: getVersion
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Version"
+
+  /api/v1/packages:
     post:
-      deprecated: true
       tags:
         - package
-        - registry
       summary: Push new package release to the registry
       description: ""
       operationId: createPackage
@@ -67,7 +79,6 @@ paths:
     get:
       tags:
         - package
-        - registry
       summary: List packages
       description: ""
       operationId: listPackages
@@ -87,10 +98,9 @@ paths:
           schema:
             $ref: "#/definitions/Packages"
 
-  /packages/{package}:
+  /api/v1/packages/{package}:
     get:
       tags:
-        - registry
         - package
       summary: Show a package
       description: ""
@@ -118,11 +128,11 @@ paths:
           description: Not authorized to read the package
           schema:
             $ref: "#/definitions/Error"
+
     delete:
       tags:
-        - registry
         - package
-      summary: Show a package
+      summary: Delete a package release
       description: ""
       operationId: deletePackage
       consumes:
@@ -149,18 +159,17 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-  /packages/{package}/pull:
+  /api/v1/packages/{package}/pull:
     get:
       tags:
-        - registry
         - package
-      summary: Show a package
+      summary: Download the package
       description: ""
       operationId: pullPackage
       consumes:
         - application/json
       produces:
-        - application/json
+        - 'application/x-gzip'
       parameters:
         - in: path
           name: package
@@ -171,7 +180,8 @@ paths:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/Package"
+            type: file
+            title: package-targz
         "404":
           description: Package not found
           schema:
@@ -181,12 +191,11 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-  /packages/{package}/tree:
+  /api/v1/packages/{package}/tree:
     get:
       tags:
-        - registry
         - package
-      summary: Show a package
+      summary: Display package directory tree
       description: ""
       operationId: treePackage
       consumes:
@@ -203,7 +212,8 @@ paths:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/Package"
+            type: string
+            title: filepath
         "404":
           description: Package not found
           schema:
@@ -213,12 +223,11 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-  /packages/{package}/file/{filepath}:
+  /api/v1/packages/{package}/file/{filepath}:
     get:
       tags:
-        - registry
         - package
-      summary: Show a package
+      summary: Returns the file content
       description: ""
       operationId: filePackage
       consumes:
@@ -234,14 +243,15 @@ paths:
 
         - in: path
           name: filepath
-          description: full package name
+          description: Filepath
           required: true
           type: string
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/Package"
+            type: string
+            title: filecontent
         "404":
           description: Package not found
           schema:
@@ -251,10 +261,10 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-  /deployments/{package}:
+  /api/v1/deployments/{package}:
     post:
       tags:
-        - deployments
+        - deployment
       summary: Deploy a package server-side
       description: ""
       operationId: deployPackage
@@ -284,7 +294,7 @@ paths:
 
     delete:
       tags:
-        - deployments
+        - deployment
       summary: Uninstall a package server-side
       description: ""
       operationId: uninstallPackage
@@ -311,6 +321,317 @@ paths:
           description: Not authorized to read the package
           schema:
             $ref: "#/definitions/Error"
+
+
+  /api/v1/packages/{package}/channels:
+    get:
+      tags:
+        - channel
+      summary: List channels
+      description: ""
+      operationId: listChannels
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: array
+            title: channels
+            items:
+              $ref: "#/definitions/Channel"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+    post:
+      tags:
+        - channel
+      summary: Create a new channel
+      description: ""
+      operationId: createChannel
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: name
+          description: Channel name
+          required: true
+          type: string
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Channel"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "409":
+          description: Channel already exists
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to create the channel
+          schema:
+            $ref: "#/definitions/Error"
+
+  /api/v1/packages/{package}/channels/{channel}:
+    get:
+      tags:
+        - channel
+      summary: List channels
+      description: ""
+      operationId: showChannel
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: channel
+          description: channel name
+          required: true
+          type: string
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: array
+            title: channels
+            items:
+              $ref: "#/definitions/Channel"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+    delete:
+      tags:
+        - channel
+      summary: Delete channel
+      description: ""
+      operationId: deleteChannel
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: channel
+          description: channel name
+          required: true
+          type: string
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: array
+            title: channels
+            items:
+              $ref: "#/definitions/Channel"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /api/v1/packages/{package}/channels/{channel}/{release}:
+    post:
+      tags:
+        - channel
+      summary: Add a release to a channel
+      description: ""
+      operationId: createChannelRelease
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: channel
+          description: channel name
+          required: true
+          type: string
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+        - in: path
+          name: release
+          type: string
+          description: Release name
+          required: true
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Channel"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+    delete:
+      tags:
+        - channel
+      summary: Remove a release from the channel
+      description: ""
+      operationId: deleteChannelRelease
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: channel
+          description: channel name
+          required: true
+          type: string
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+        - in: path
+          name: release
+          type: string
+          description: Release name
+          required: true
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: array
+            title: channels
+            items:
+              $ref: "#/definitions/Channel"
+        "404":
+          description: Resource not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+
+  /api/v1/packages/{package}/generate:
+    get:
+      tags:
+        - build
+      summary: Generate/build a package, returns a json
+      description: ""
+      operationId: buildJsonPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+
+        - in: body
+          name: build-info
+          schema:
+            $ref: "#/definitions/PostBuild"
+
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/PackageBuild"
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
+  /api/v1/packages/{package}/generate-tar:
+    get:
+      tags:
+        - build
+      summary: Generate/Build a package, returns a tarball with the resolved k8s-resources
+      description: ""
+      operationId: buildTarPackage
+      consumes:
+        - application/json
+      produces:
+        - "application/x-gzip"
+      parameters:
+        - in: path
+          name: package
+          description: full package name
+          required: true
+          type: string
+
+        - in: body
+          name: build-info
+          schema:
+            $ref: "#/definitions/PostBuild"
+
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: file
+        "404":
+          description: Package not found
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Not authorized to read the package
+          schema:
+            $ref: "#/definitions/Error"
+
 
 definitions:
 
@@ -398,6 +719,29 @@ definitions:
         type: string
         title: package-version
         description: Package version
+
+  PostBuild:
+    type: object
+    title: build
+    description: build
+    properties:
+      version:
+        description: Package version
+        title: version
+        default: latest
+        type: string
+      namespace:
+        description: Kubernetes namespace
+        type: string
+        title: namespace
+      variables:
+        type: object
+        title: variables
+        description: package variables
+      shards:
+        type: object
+        title: shards
+        description: package shards
 
   DeployResult:
     type: object
