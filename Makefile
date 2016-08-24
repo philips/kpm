@@ -88,6 +88,7 @@ dist: clean
 	ls -l dist
 
 install: clean
+	pip install -r requirements.txt
 	python setup.py install
 
 flake8:
