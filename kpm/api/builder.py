@@ -1,39 +1,29 @@
-import json
 from flask import jsonify, Blueprint, current_app
-from kpm.kub_jsonnet import KubJsonnet
+import kpm.api.impl.builder
 from kpm.api.app import getvalues
 
 builder_app = Blueprint('builder', __name__,)
 
 
 def _build(package):
-    name = package
     values = getvalues()
-    version = values.get('version', None)
-    namespace = values.get('namespace', 'default')
-    variables = values.get('variables', {})
-    shards = values.get('shards', None)
-    variables['namespace'] = namespace
-    k = KubJsonnet(name,
-                   endpoint=current_app.config['KPM_REGISTRY_HOST'],
-                   variables=variables,
-                   namespace=namespace,
-                   version=version,
-                   shards=shards)
-
+    k = kpm.api.impl.builder.build(package,
+                                   values,
+                                   endpoint=current_app.config['KPM_REGISTRY_HOST'])
     return k
 
 
 @builder_app.route("/api/v1/packages/<path:package>/file/<path:filepath>")
 def show_file(package, filepath):
-    k = KubJsonnet(package, endpoint=current_app.config['KPM_REGISTRY_HOST'])
-    return k.package.file(filepath)
+    return kpm.api.impl.builder.show_file(package, filepath,
+                                          endpoint=current_app.config['KPM_REGISTRY_HOST'])
 
 
 @builder_app.route("/api/v1/packages/<path:package>/tree")
 def tree(package):
-    k = KubJsonnet(package, endpoint=current_app.config['KPM_REGISTRY_HOST'])
-    return json.dumps(k.package.tree())
+    r = kpm.api.impl.builder.tree(package,
+                                  endpoint=current_app.config['KPM_REGISTRY_HOST'])
+    return jsonify(r)
 
 
 @builder_app.route("/api/v1/packages/<path:package>/generate", methods=['POST', 'GET'])

@@ -131,7 +131,7 @@ class Registry(object):
             params['version'] = version
         r = requests.delete(self._url(path), params=params, headers=self.headers)
         r.raise_for_status()
-        return True
+        return r.json()
 
     def _crud_channel(self, name, channel='', action='get'):
         if channel is None:

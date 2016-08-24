@@ -163,7 +163,7 @@ def test_delete_package():
     with requests_mock.mock() as m:
         response = '{"packages": "true"}'
         m.delete("https://api.kpm.sh/api/v1/packages/ant31/kube-ui", complete_qs=True, text=response)
-        assert r.delete_package(name="ant31/kube-ui") is True
+        assert r.delete_package(name="ant31/kube-ui") == {"packages": "true"}
 
 
 def test_delete_package_version():
@@ -171,7 +171,7 @@ def test_delete_package_version():
     with requests_mock.mock() as m:
         response = '{"packages": "true"}'
         m.delete("https://api.kpm.sh/api/v1/packages/ant31/kube-ui?version=1.4.3", complete_qs=True, text=response)
-        assert r.delete_package(name="ant31/kube-ui", version="1.4.3") is True
+        assert r.delete_package(name="ant31/kube-ui", version="1.4.3") == {"packages": "true"}
 
 
 def test_delete_package_unauthorized():

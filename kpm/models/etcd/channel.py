@@ -48,7 +48,7 @@ class Channel(ChannelBase):
         try:
             chans = etcd_client.read(path, recursive=True)
         except etcd.EtcdKeyNotFound:
-            self._raise_not_found(package)
+            return []
         result = []
         for child in chans.children:
             m = re.match("^/%s/([a-zA-Z0-9-_]+)/?.*$" % path, child.key)
