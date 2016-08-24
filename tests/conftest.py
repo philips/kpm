@@ -14,7 +14,7 @@ def discovery_html():
     <meta name="kpm-package" content="kpm.sh/{name} https://api.kubespray.io/api/v1/packages/{name}/pull">
     </head>
     <body>
-    <a href=https://github.com/kubespray/kpm>kubespray/kpm</a>
+    <a href=https://github.com/coreos/kpm>coreos/kpm</a>
     </body>
     </html>"""
 

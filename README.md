@@ -80,7 +80,7 @@ $ sudo pip install kpm -U
 ##### From git
 
 ```
-git clone https://github.com/kubespray/kpm.git kpm-cli
+git clone https://github.com/coreos/kpm.git kpm-cli
 cd kpm-cli
 sudo make install
 ```

@@ -51,7 +51,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Antoine Legrand",
     author_email='2t.antoine@gmail.com',
-    url='https://github.com/kubespray/kpm',
+    url='https://github.com/coreos/kpm',
     packages=[
         'kpm',
         'kpm.api',
