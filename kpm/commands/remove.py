@@ -22,5 +22,4 @@ class RemoveCmd(DeployCmd):
                                         proxy=self.api_proxy,
                                         variables=variables,
                                         shards=self.shards,
-                                        jsonnet=self.isjsonnet,
                                         fmt=self.output)
