@@ -7,8 +7,16 @@ builder_app = Blueprint('builder', __name__,)
 
 def _build(package):
     values = getvalues()
+    version = values.get('version', None)
+    namespace = values.get('namespace', 'default')
+    variables = values.get('variables', {})
+    shards = values.get('shards', None)
+    variables['namespace'] = namespace
     k = kpm.api.impl.builder.build(package,
-                                   values,
+                                   version=version,
+                                   namespace=namespace,
+                                   variables=variables,
+                                   shards=shards,
                                    endpoint=current_app.config['KPM_REGISTRY_HOST'])
     return k
 

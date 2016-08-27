@@ -3,6 +3,8 @@ from kpm.utils import mkdir_p
 
 
 class KpmAuth(object):
+    """ Store Auth object """
+
     def __init__(self):
         path = ".kpm/auth_token"
         home = os.path.expanduser("~")

@@ -67,10 +67,9 @@ coverage:
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
-docs:
-	rm -f docs/kpm.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ kpm
+docs: install
+	rm -f test1
+	sphinx-apidoc  -f -P -o docs/test1 kpm
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html

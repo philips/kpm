@@ -1,4 +1,5 @@
 import json
+from base64 import b64decode
 from flask import jsonify, request, Blueprint, current_app
 from kpm.api.app import getvalues
 import kpm.api.impl.registry
@@ -50,7 +51,7 @@ def pull(package):
     if 'format' in values and values['format'] == 'json':
         resp = jsonify({"package": r['package'], "kub": r['blob']})
     else:
-        resp = current_app.make_response(r['blob'])
+        resp = current_app.make_response(b64decode(r['blob']))
         resp.headers['Content-Disposition'] = r['filename']
         resp.mimetype = 'application/x-gzip'
     return resp
@@ -85,13 +86,10 @@ def list_packages():
 def show_package(package):
     values = getvalues()
     version = values.get("version", 'latest')
-    stable = False
     pullmode = False
-    if 'stable' in values and values['stable'] == 'true':
-        stable = True
     if 'pull' in values and values['pull'] == 'true':
         pullmode = True
-    r = kpm.api.impl.registry.show_package(package, version, stable, pullmode)
+    r = kpm.api.impl.registry.show_package(package, version, pullmode)
     return jsonify(r)
 
 
