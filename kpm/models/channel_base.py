@@ -24,17 +24,6 @@ class ChannelBase(object):
 
     @classmethod
     def all(self, package):
-        """ Returns all available channels for a package """
-        channel_names = self._all(package)
-        result = {}
-        for channel in channel_names:
-            c = self(channel, package)
-            releases = c.releases()
-            result[str(channel)] = {"releases": releases, "channel": channel, "current": c.current_release(releases)}
-        return result
-
-    @classmethod
-    def _all(self, package):
         raise NotImplementedError
 
     def releases(self):
@@ -61,23 +50,22 @@ class ChannelBase(object):
     def activate_release(self, version):
         raise NotImplementedError
 
-    def add_release(self, version):
-        if self._check_release(version) is False:
+    def add_release(self, version, package_class):
+        if self._check_release(version, package_class) is False:
             raise ValueError("Release %s doesn't exist for package %s" % (version, self.package))
         if not self.exists():
             self.save()
         return self._add_release(version)
 
-    def remove_release(self, version):
-        if self._check_release(version) is False:
+    def remove_release(self, version, package_class):
+        if self._check_release(version, package_class) is False:
             raise ValueError("Release %s doesn't exist for package %s" % (version, self.package))
         if not self.exists():
             self.save()
         return self._remove_release(version)
 
-    def _check_release(self, release_name):
-        from kpm.models import Package
-        version = Package.get_version(self.package, release_name)
+    def _check_release(self, release_name, package_class):
+        version = package_class.get_version(self.package, release_name)
         if version is None or str(version) != release_name:
             return False
         else:

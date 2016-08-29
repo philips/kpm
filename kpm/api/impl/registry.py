@@ -1,12 +1,13 @@
 import logging
 import kpm.semver as semver
-import kpm.models as models
+from kpm.models.etcd.package import Package
+from kpm.models.etcd.channel import Channel
 
 
 logger = logging.getLogger(__name__)
 
 
-def _get_package(package, version_query='latest'):
+def _get_package(package, version_query='latest', package_class=Package):
     """
       Fetch the package data from the datastore
       and instantiate a :obj:`kpm.models.package_base.PackageModelBase`
@@ -14,6 +15,7 @@ def _get_package(package, version_query='latest'):
     Args:
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       version_query (:obj:`str`): a version query, eg: ">=1.5,<2.0"
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`kpm.kub_jsonnet.KubJsonnet`: :obj:`kpm.models.package_base.PackageModelBase`
@@ -29,17 +31,18 @@ def _get_package(package, version_query='latest'):
 
     """
     # if version is None; Find latest version
-    p = models.Package.get(package, version_query)
+    p = package_class.get(package, version_query)
     return p
 
 
-def pull(package, version='latest'):
+def pull(package, version='latest', package_class=Package):
     """
     Retrives the package blob from the datastore
 
     Args:
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       version_query (:obj:`str`): a version query, eg: ">=1.5,<2.0"
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`dict`: package data
@@ -67,7 +70,7 @@ def pull(package, version='latest'):
 
     """
 
-    packagemodel = _get_package(package, version)
+    packagemodel = _get_package(package, version, package_class=package_class)
     resp = {"package": package,
             "blob": packagemodel.blob,
             "version": packagemodel.version,
@@ -75,7 +78,7 @@ def pull(package, version='latest'):
     return resp
 
 
-def push(package, version, blob, force=False):
+def push(package, version, blob, force=False, package_class=Package):
     """
     Push a new package release in the the datastore
 
@@ -84,6 +87,7 @@ def push(package, version, blob, force=False):
       version (:obj:`str`): the 'exact' package version (this is not a version_query)
       blob (:obj:`str`): the package directory in `tar.gz` and encoded in base64
       force (:obj:`boolean`): if the package exists already, overwrite it
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`dict`: push status
@@ -102,12 +106,12 @@ def push(package, version, blob, force=False):
        * :obj:`kpm.api.registry.push`
 
     """
-    p = models.Package(package, version, blob)
+    p = package_class(package, version, blob)
     p.save(force=force)
     return {"status": "ok"}
 
 
-def list_packages(organization=None):
+def list_packages(organization=None, package_class=Package):
     """
     List all packages, filters can be applied
     Must have at least a release to be visible
@@ -118,6 +122,7 @@ def list_packages(organization=None):
 
     Args:
       organization (:obj:`str`): returns packages from the `organization` only
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`list of dict`: list packages
@@ -147,11 +152,15 @@ def list_packages(organization=None):
     See Also:
        * :obj:`kpm.api.registry.list_packages`
     """
-    resp = models.Package.all(organization)
+    resp = package_class.all(organization)
     return resp
 
 
-def show_package(package, version="latest", pullmode=False):
+def show_package(package,
+                 version="latest",
+                 pullmode=False,
+                 channel_class=Channel,
+                 package_class=Package):
     """
     Returns package details
 
@@ -159,6 +168,8 @@ def show_package(package, version="latest", pullmode=False):
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       version (:obj:`str`): the 'exact' package version (this is not a version_query)
       pullmode (:obj:`boolean`): include the package blob in the response
+      channel_class (:obj:`kpm.models.channel_base:ChannelBase`): the implemented Channel class to use
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`dict`: package data
@@ -216,7 +227,7 @@ def show_package(package, version="latest", pullmode=False):
        * :obj:`kpm.api.registry.show_package`
     """
     stable = False
-    packagemodel = _get_package(package, version)
+    packagemodel = _get_package(package, version, package_class)
     manifest = packagemodel.manifest()
     response = {"manifest": packagemodel.packager.manifest,
                 "version": packagemodel.version,
@@ -224,21 +235,23 @@ def show_package(package, version="latest", pullmode=False):
                 "created_at": packagemodel.created_at,
                 "variables": manifest.variables,
                 "dependencies": manifest.dependencies,
-                "channels": models.Channel.all(package).values(),
+                "channels": packagemodel.channels(channel_class),
                 "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
                                                               reverse=True)]}
     if pullmode:
-        response['kub'] = packagemodel.b64blob
+        response['kub'] = packagemodel.blob
     return response
 
 
 # CHANNELS
-def list_channels(package):
+def list_channels(package, channel_class=Channel, package_class=Package):
     """
     List all channels for a given package
 
     Args:
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
+      channel_class (:obj:`kpm.models.channel_base:ChannelBase`): the implemented Channel class to use
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`list of dict`: list channels:
@@ -254,16 +267,18 @@ def list_channels(package):
     See Also:
        * :obj:`kpm.api.registry.list_channels`
     """
-    channels = models.Channel.all(package).values()
+    packagemodel = package_class(package)
+    channels = packagemodel.channels(channel_class).values()
     return channels
 
 
-def show_channel(package, name):
+def show_channel(package, name, channel_class=Channel):
     """
     Show channel info
     Args:
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       name (:obj:`str`): channel name to inspect
+      channel_class (:obj:`kpm.models.channel_base:ChannelBase`): the implemented Channel class to use
 
     Returns:
       :obj:`dict`: channel info
@@ -281,17 +296,19 @@ def show_channel(package, name):
     See Also:
        * :obj:`kpm.api.registry.show_channel`
     """
-    c = models.Channel(name, package)
+    c = channel_class(name, package)
     return c.to_dict()
 
 
-def add_channel_release(package, name, release):
+def add_channel_release(package, name, release, channel_class=Channel, package_class=Package):
     """
     Add a package-release to a channel
     Args:
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       name (:obj:`str`): channel name to inspect
       release (:obj:`str`): package version to add
+      channel_class (:obj:`kpm.models.channel_base:ChannelBase`): the implemented Channel class to use
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`dict`: channel info
@@ -309,12 +326,12 @@ def add_channel_release(package, name, release):
     See Also:
        * :obj:`kpm.api.registry.add_channel_release`
     """
-    channel = models.Channel(name, package)
-    channel.add_release(release)
+    channel = channel_class(name, package)
+    channel.add_release(release, package_class)
     return channel.to_dict()
 
 
-def delete_channel_release(package, name, release):
+def delete_channel_release(package, name, release, channel_class=Channel, package_class=Package):
     """
     Remove a release from a channel
 
@@ -322,6 +339,8 @@ def delete_channel_release(package, name, release):
       package (:obj:`str`): package name in the format "namespace/name" or "domain.com/name"
       name (:obj:`str`): channel name to inspect
       release (:obj:`str`): package version to add
+      channel_class (:obj:`kpm.models.channel_base:ChannelBase`): the implemented Channel class to use
+      package_class (:obj:`kpm.models.package_base:PackageBase`): the implemented Package class to use
 
     Returns:
       :obj:`dict`: channel info
@@ -339,24 +358,24 @@ def delete_channel_release(package, name, release):
     See Also:
        * :obj:`kpm.api.registry.delete_channel_release`
     """
-    channel = models.Channel(name, package)
+    channel = channel_class(name, package, package_class)
     channel.remove_release(release)
     return channel.to_dict()
 
 
-def create_channel(package, name):
-    channel = models.Channel(name, package)
+def create_channel(package, name, channel_class=Channel):
+    channel = channel_class(name, package)
     channel.save()
     return channel.to_dict()
 
 
-def delete_channel(package, name):
-    channel = models.Channel(name, package)
+def delete_channel(package, name, channel_class=Channel):
+    channel = channel_class(name, package)
     channel.delete()
     return {"channel": channel.name, "package": package, "action": 'delete'}
 
 
-def delete_package(package, version="latest"):
-    packagemodel = _get_package(package, version)
-    models.Package.delete(packagemodel.package, packagemodel.version)
+def delete_package(package, version="latest", package_class=Package):
+    packagemodel = _get_package(package, version, package_class)
+    package_class.delete(packagemodel.package, packagemodel.version)
     return {"status": "delete", "package": packagemodel.package, "version": packagemodel.version}

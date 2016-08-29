@@ -3,14 +3,16 @@ import json
 import etcd
 import re
 import kpm.semver as semver
-from kpm.models.package_base import PackageModelBase
+from kpm.models.package_base import PackageBase
 from kpm.exception import PackageAlreadyExists
 from kpm.models.etcd import ETCD_PREFIX, etcd_client
 
 
-class Package(PackageModelBase):
+class Package(PackageBase):
     def __init__(self, package_name, version, blob=None):
-        super(Package, self).__init__(package_name, version, blob)
+        super(Package, self).__init__(package_name,
+                                      version=version,
+                                      blob=blob)
 
     @classmethod
     def _fetch(self, package, version):

@@ -9,7 +9,7 @@ from kpm.exception import (InvalidVersion,
                            PackageNotFound)
 
 
-class PackageModelBase(object):
+class PackageBase(object):
     def __init__(self, package_name, version=None, blob=None, data=None):
         self.package = package_name
         self.organization, self.name = package_name.split("/")
@@ -21,6 +21,16 @@ class PackageModelBase(object):
 
     def manifest(self, tla_codes=None):
         return ManifestJsonnet(self.packager, tla_codes)
+
+    def channels(self, channel_class):
+        """ Returns all available channels for a package """
+        channel_names = channel_class.all(self.package)
+        result = {}
+        for channel in channel_names:
+            c = channel_class(channel, self.package, self.__class__)
+            releases = c.releases()
+            result[str(channel)] = {"releases": releases, "channel": channel, "current": c.current_release(releases)}
+        return result
 
     @property
     def blob(self):
