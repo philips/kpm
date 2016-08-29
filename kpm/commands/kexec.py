@@ -9,7 +9,6 @@ class ExecCmd(CommandBase):
 
     def __init__(self, options):
         self.output = options.output
-        self.package = options.package[0]
         self.kind = options.kind
         self.container = options.container
         self.namespace = options.namespace
