@@ -25,3 +25,4 @@ tox>=2.1.1
 urllib3>=1.16
 watchdog>=0.8.3
 wheel>=0.23.0
+sphinxcontrib-napoleon

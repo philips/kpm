@@ -1,6 +1,7 @@
 import datetime
 import semantic_version
 import kpm.packager as packager
+from kpm.manifest_jsonnet import ManifestJsonnet
 from kpm.semver import last_version, select_version
 from kpm.exception import (InvalidVersion,
                            PackageAlreadyExists,
@@ -17,6 +18,9 @@ class PackageModelBase(object):
         self.created_at = None
         self.packager = None
         self.blob = blob
+
+    def manifest(self, tla_codes=None):
+        return ManifestJsonnet(self.packager, tla_codes)
 
     @property
     def blob(self):

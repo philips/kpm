@@ -1,8 +1,8 @@
 import json
+from base64 import b64decode
 from flask import jsonify, request, Blueprint, current_app
 from kpm.api.app import getvalues
-import kpm.semver as semver
-
+import kpm.api.impl.registry
 from kpm.exception import (KpmException,
                            InvalidUsage,
                            InvalidVersion,
@@ -12,7 +12,6 @@ from kpm.exception import (KpmException,
                            ChannelNotFound,
                            PackageVersionNotFound)
 
-import kpm.models as models
 import etcd
 
 registry_app = Blueprint('registry', __name__,)
@@ -43,24 +42,17 @@ def test_error():
     raise InvalidUsage("error message", {"path": request.path})
 
 
-def get_package(package, values):
-    # if version is None; Find latest version
-    version_query = values.get("version", 'latest')
-    p = models.Package.get(package, version_query)
-    return p
-
-
 @registry_app.route("/api/v1/packages/<path:package>/pull", methods=['GET'], strict_slashes=False)
 def pull(package):
     current_app.logger.info("pull %s", package)
     values = getvalues()
-    packagemodel = get_package(package, values)
+    version = values.get("version", 'latest')
+    r = kpm.api.impl.registry.pull(package, version)
     if 'format' in values and values['format'] == 'json':
-        resp = jsonify({"package": package, "kub": packagemodel.blob})
+        resp = jsonify({"package": r['package'], "kub": r['blob']})
     else:
-        resp = current_app.make_response(packagemodel.packager.blob)
-        resp.headers['Content-Disposition'] = 'filename="%s_%s.tar.gz"' % (packagemodel.package.replace("/", "_"),
-                                                                           packagemodel.version)
+        resp = current_app.make_response(b64decode(r['blob']))
+        resp.headers['Content-Disposition'] = r['filename']
         resp.mimetype = 'application/x-gzip'
     return resp
 
@@ -75,15 +67,16 @@ def push(package=None):
     force = False
     if 'force' in values:
         force = 'true' == values['force']
-    p = models.Package(package, version, blob)
-    p.save(force=force)
-    return jsonify({"status": "ok"})
+
+    r = kpm.api.impl.registry.push(package, version, blob, force)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages", methods=['GET'], strict_slashes=False)
 def list_packages():
     values = getvalues()
-    r = models.Package.all(values.get('organization', None))
+    organization = values.get('organization', None)
+    r = kpm.api.impl.registry.list_packages(organization=organization)
     resp = current_app.make_response(json.dumps(r))
     resp.mimetype = 'application/json'
     return resp
@@ -92,76 +85,61 @@ def list_packages():
 @registry_app.route("/api/v1/packages/<path:package>", methods=['GET'], strict_slashes=False)
 def show_package(package):
     values = getvalues()
-    packagemodel = get_package(package, values)
-    p = packagemodel.packager
-    manifest = p.manifest
-    stable = False
-    if 'stable' in values and values['stable'] == 'true':
-        stable = True
-
-    response = {"manifest": manifest,
-                "version": packagemodel.version,
-                "name":  package,
-                "created_at": packagemodel.created_at,
-                "channels": models.Channel.all(package).values(),
-                "available_versions": [str(x) for x in sorted(semver.versions(packagemodel.versions(), stable),
-                                                              reverse=True)]}
+    version = values.get("version", 'latest')
+    pullmode = False
     if 'pull' in values and values['pull'] == 'true':
-        response['kub'] = p.b64blob
-    return jsonify(response)
+        pullmode = True
+    r = kpm.api.impl.registry.show_package(package, version, pullmode)
+    return jsonify(r)
 
 
 # CHANNELS
 @registry_app.route("/api/v1/packages/<path:package>/channels", methods=['GET'], strict_slashes=False)
 def list_channels(package):
-    channels = models.Channel.all(package).values()
-    resp = current_app.make_response(json.dumps(channels))
+    r = kpm.api.impl.registry.list_channels(package)
+    resp = current_app.make_response(json.dumps(r))
     resp.mimetype = 'application/json'
     return resp
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>", methods=['GET'], strict_slashes=False)
 def show_channel(package, name):
-    c = models.Channel(name, package)
-    return jsonify(c.to_dict())
+    r = kpm.api.impl.registry.show_channel(package, name)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
                     methods=['POST'], strict_slashes=False)
 def add_channel_release(package, name, release):
-    channel = models.Channel(name, package)
-    channel.add_release(release)
-    return jsonify(channel.to_dict())
+    r = kpm.api.impl.registry.add_channel_release(package, name, release)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>/<string:release>",
                     methods=['DELETE'], strict_slashes=False)
 def delete_channel_release(package, name, release):
-    channel = models.Channel(name, package)
-    channel.remove_release(release)
-    return jsonify(channel.to_dict())
+    r = kpm.api.impl.registry.delete_channel_release(package, name, release)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
                     methods=['POST'], strict_slashes=False)
 def create_channel(package, name):
-    channel = models.Channel(name, package)
-    channel.save()
-    return jsonify(channel.to_dict())
+    r = kpm.api.impl.registry.create_channel(package, name)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages/<path:package>/channels/<string:name>",
                     methods=['DELETE'], strict_slashes=False)
 def delete_channel(package, name):
-    channel = models.Channel(name, package)
-    channel.delete()
-    return jsonify({"channel": channel.name, "package": package, "action": 'delete'})
+    r = kpm.api.impl.registry.delete_channel(package, name)
+    return jsonify(r)
 
 
 @registry_app.route("/api/v1/packages/<string:orga>/<string:pname>", methods=['DELETE'], strict_slashes=False)
 def delete_package(orga, pname):
     package = "%s/%s" % (orga, pname)
     values = getvalues()
-    packagemodel = get_package(package, values)
-    models.Package.delete(packagemodel.package, packagemodel.version)
-    return jsonify({"status": "delete", "package": packagemodel.package, "version": packagemodel.version})
+    version = values.get("version", "latest")
+    r = kpm.api.impl.registry.delete_package(package, version)
+    return jsonify(r)

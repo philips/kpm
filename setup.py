@@ -55,6 +55,7 @@ setup(
     packages=[
         'kpm',
         'kpm.api',
+        'kpm.api.impl',
         'kpm.models',
         'kpm.commands',
         'kpm.models.etcd'

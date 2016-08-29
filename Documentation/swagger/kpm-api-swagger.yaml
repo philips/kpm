@@ -682,13 +682,45 @@ definitions:
     title: Packages
     description: List packages
     items:
-      $ref: "#/definitions/Package"
+      available_versions:
+        type: array
+        title: available-releases
+        description: All available releases
+        items:
+          type: string
+          title: release-name
+          description: Release name
+      created_at:
+        type: string
+        title: created_at
+        description: Package creation date
+      name:
+        type: string
+        title: package-name
+        description: Package name
+      version:
+        type: string
+        title: package-version
+        description: Package version
+      downloads:
+        type: int
+        title: downloads
+        description: number of downloads
+
 
   Package:
     type: object
     title: Package
     description: Package object
     properties:
+      dependencies:
+        type: array
+        title: package-dependencies
+        description: Dependencies
+        items:
+          type: string
+          title: package-dependency
+          description: Package dependency name
       available_versions:
         type: array
         title: available-releases
