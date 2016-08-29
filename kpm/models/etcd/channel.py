@@ -40,7 +40,7 @@ class Channel(ChannelBase):
         return False
 
     @classmethod
-    def _all(self, package):
+    def all(self, package):
         """
         Returns all available channels for a package
         """
