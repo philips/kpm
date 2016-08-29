@@ -27,13 +27,13 @@ requirements = [
     'flask',
     'Flask>=0.10.1',
     'flask-cors',
+    'jsonnet',
 ]
 
 secure_requirements = [
     'ecdsa',
-    'jsonnet'
     'cryptography',
-    'urllib3[secure]'
+    'urllib3[secure]',
 ]
 
 test_requirements = [
@@ -81,5 +81,8 @@ setup(
     tests_require=test_requirements,
     extras_require={
         'secure': secure_requirements
-    }
+    },
+    dependency_links=[
+        'https://github.com/google/jsonnet/archive/227079272a19d03adf34332e2a0c11906e081894.zip#egg=jsonnet'
+    ]
 )
