@@ -100,8 +100,7 @@ class Registry(object):
         path = "/users/login"
         self.auth.delete_token()
         r = requests.post(self._url(path),
-                          params={"user[username]": username,
-                                  "user[password]": password},
+                          data=json.dumps({"user": {"username": username, "password": password}}),
                           headers=self.headers)
         r.raise_for_status()
         result = r.json()
@@ -112,11 +111,10 @@ class Registry(object):
         path = "/users"
         self.auth.delete_token()
         r = requests.post(self._url(path),
-                          params={"user[username]": username,
-                                  "user[password]": password,
-                                  "user[password_confirmation]": password_confirmation,
-                                  "user[email]": email,
-                                  },
+                          data=json.dumps({"user": {"username": username,
+                                                    "password": password,
+                                                    "password_confirmation": password_confirmation,
+                                                    "email": email}}),
                           headers=self.headers)
         r.raise_for_status()
         result = r.json()
