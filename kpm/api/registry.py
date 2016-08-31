@@ -87,7 +87,7 @@ def show_package(package):
     values = getvalues()
     version = values.get("version", 'latest')
     pullmode = False
-    if 'pull' in values and (values['pull'] == 'true' or values['pull'] == True):
+    if 'pull' in values and (values['pull'] == 'true' or values['pull']):
         pullmode = True
     r = kpm.api.impl.registry.show_package(package, version, pullmode)
     return jsonify(r)
