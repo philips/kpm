@@ -9,7 +9,7 @@ from kpm.models.etcd import ETCD_PREFIX, etcd_client
 
 
 class Package(PackageBase):
-    def __init__(self, package_name, version, blob=None):
+    def __init__(self, package_name, version=None, blob=None):
         super(Package, self).__init__(package_name,
                                       version=version,
                                       blob=blob)
