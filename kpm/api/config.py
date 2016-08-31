@@ -5,9 +5,9 @@ class Config(object):
     """ Default configuration """
     DEBUG = False
     KUBE_APIMASTER = os.getenv('KUBE_APIMASTER', 'http://localhost:8001')
-    KPM_REGISTRY_HOST = os.getenv('KPM_REGISTRY_HOST', 'http://localhost:5000')
-    KPM_BUILDER_HOST = os.getenv('KPM_BUILDER_HOST', 'http://localhost:5000')
     KPM_URI = os.getenv('KPM_URI', "http://localhost:5000")
+    KPM_REGISTRY_HOST = os.getenv('KPM_REGISTRY_HOST', KPM_URI)
+    KPM_BUILDER_HOST = os.getenv('KPM_BUILDER_HOST', KPM_URI)
     KPM_MODELS_MODULE = os.getenv('KPM_MODELS_MODULE', "kpm.models.etcd")
     KPM_MODELS = os.getenv('KPM_MODELS', '{"Package": "kpm.models.etcd.package:Package"}')
     KPM_API_BACKEND = 'true'
