@@ -9,7 +9,7 @@ function(
       name: "coreos/kpm-registry",
       expander: "jinja2",
       author: "Antoine Legrand",
-      version: "0.21.1-1",
+      version: "0.21.1-2",
       description: "kpm-registry",
       license: "Apache 2.0",
     },

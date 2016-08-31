@@ -17,7 +17,7 @@ class ManifestBase(dict):
 
     @property
     def dependencies(self):
-        return [x.name for x in self.deploy if x.name != "$self"]
+        return [x['name'] for x in self.deploy if x['name'] != "$self"]
 
     @property
     def variables(self):
