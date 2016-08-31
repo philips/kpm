@@ -13,7 +13,7 @@ def _build(package):
     shards = values.get('shards', None)
     variables['namespace'] = namespace
     k = kpm.api.impl.builder.build(package,
-                                   version=version,
+                                   version_query=version,
                                    namespace=namespace,
                                    variables=variables,
                                    shards=shards,
