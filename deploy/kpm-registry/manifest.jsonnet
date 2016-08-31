@@ -1,73 +1,72 @@
-
 local kpm = import "kpm.libjsonnet";
 
 function(
   params={}
 )
 
-kpm.package({
-  package: {
-    name: "kubespray/kpm-registry",
-    expander: "jinja2",
-    author: "Antoine Legrand",
-    version: "0.21.0-rc.1",
-    description: "kpm-registry",
-    license: "Apache 2.0",
-  },
-
-  variables: {
-    etcd_cluster_size: 3,
-    namespace: 'default',
-    image: "quay.io/kubespray/kpm:v0.21.0",
-    image_etcd: "quay.io/coreos/etcd:v3.0.6",
-    initial_cluster: "etcd=http://etcd.%s.svc.cluster.local:2380" % $.variables.namespace,
-    svc_type: "NodePort",
-    etcd_volumes: "emptydir"
+  kpm.package({
+    package: {
+      name: "coreos/kpm-registry",
+      expander: "jinja2",
+      author: "Antoine Legrand",
+      version: "0.21.1-1",
+      description: "kpm-registry",
+      license: "Apache 2.0",
     },
 
-  resources: [
-    {
-      file: "kpm-registry-dp.yaml",
-      template: (importstr "templates/kpm-registry-dp.yaml"),
-      name: "kpm-registry",
-      type: "deployment",
+    variables: {
+      etcd_cluster_size: 3,
+      namespace: 'default',
+      image: "quay.io/kubespray/kpm:v0.21.1",
+      image_etcd: "quay.io/coreos/etcd:v3.0.6",
+      initial_cluster: "etcd=http://etcd.%s.svc.cluster.local:2380" % $.variables.namespace,
+      svc_type: "NodePort",
+      etcd_volumes: "emptydir",
     },
 
-    {
-      file: "kpm-registry-svc.yaml",
-      template: (importstr "templates/kpm-registry-svc.yaml"),
-      name: "kpm-registry",
-      type: "service",
-    },
-  ],
-
-  deploy: [
-    if $.variables.etcd_volumes == "pvc" then
+    resources: [
       {
-        name: "kpm.sh/base/persistent-volume-claims",
-        shards: [{name: "kpm-%s" % i} for i in std.range(1, $.variables.etcd_cluster_size)]
+        file: "kpm-registry-dp.yaml",
+        template: (importstr "templates/kpm-registry-dp.yaml"),
+        name: "kpm-registry",
+        type: "deployment",
       },
-    {
-      name: "coreos/etcd",
 
-      shards: {
-        etcd: [{name: "kpm-%s" % x,
-                variables: if $.variables.etcd_volumes == "pvc" then
-                  {
-                   data_volumes: [{name: "varetcd", persistentVolumeClaim: {
-                                   claimName: "pvc-kpm-%s" % x}}]
-                  } else {}
-                } for x in std.range(1, $.variables.etcd_cluster_size)]
-              },
-     variables:
+      {
+        file: "kpm-registry-svc.yaml",
+        template: (importstr "templates/kpm-registry-svc.yaml"),
+        name: "kpm-registry",
+        type: "service",
+      },
+    ],
+
+    deploy: [
+      if $.variables.etcd_volumes == "pvc" then
         {
-          image: $.variables.image_etcd,
-        }
+          name: "kpm.sh/base/persistent-volume-claims",
+          shards: [{ name: "kpm-%s" % i } for i in std.range(1, $.variables.etcd_cluster_size)],
+        },
+      {
+        name: "coreos/etcd",
+
+        shards: {
+          etcd: [{ name: "kpm-%s" % x,
+                   variables: if $.variables.etcd_volumes == "pvc" then
+            {
+              data_volumes: [{ name: "varetcd", persistentVolumeClaim: {
+                claimName: "pvc-kpm-%s" % x } }],
+            } else {},
+          } for x in std.range(1, $.variables.etcd_cluster_size)],
+        },
+        variables:
+          {
+            image: $.variables.image_etcd,
+          },
       },
       {
-      name: "$self",
+        name: "$self",
       },
-      ]
+    ],
 
 
-}, params)
+  }, params)
