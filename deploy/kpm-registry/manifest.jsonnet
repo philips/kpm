@@ -19,6 +19,7 @@ function(
       namespace: 'default',
       image: "quay.io/kubespray/kpm:v0.21.1",
       image_etcd: "quay.io/coreos/etcd:v3.0.6",
+      kpm_uri: "http://kpm-registry.%s.svc.cluster.local" % $.variables.namespace,
       initial_cluster: "etcd=http://etcd.%s.svc.cluster.local:2380" % $.variables.namespace,
       svc_type: "NodePort",
       etcd_volumes: "emptydir",
