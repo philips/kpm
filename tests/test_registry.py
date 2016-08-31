@@ -121,7 +121,7 @@ def test_signup():
     r = Registry()
     with requests_mock.mock() as m:
         response = '{"email": "al@kpm.sh", "token": "signup_token"}'
-        m.post("https://api.kpm.sh/api/v1/users?user%5Bpassword%5D=plop&user%5Busername%5D=ant31&user%5Bpassword_confirmation%5D=plop&user%5Bemail%5D=al%40kpm.sh", complete_qs=True, text=response)
+        m.post("https://api.kpm.sh/api/v1/users", complete_qs=True, text=response)
         sign_r = r.signup("ant31", "plop", "plop", "al@kpm.sh")
         assert json.dumps(sign_r) == json.dumps(json.loads(response))
         assert r.auth.token == "signup_token"
@@ -132,7 +132,7 @@ def test_signup_existing():
     r = Registry()
     with requests_mock.mock() as m:
         response = '{"email": "al@kpm.sh", "token": "signup_token"}'
-        m.post("https://api.kpm.sh/api/v1/users?user%5Bpassword%5D=plop&user%5Busername%5D=ant31&user%5Bpassword_confirmation%5D=plop&user%5Bemail%5D=al%40kpm.sh", complete_qs=True, text=response, status_code=401)
+        m.post("https://api.kpm.sh/api/v1/users", complete_qs=True, text=response, status_code=401)
         with pytest.raises(requests.HTTPError):
             sign_r = r.signup("ant31", "plop", "plop", "al@kpm.sh")
 
@@ -141,7 +141,7 @@ def test_login():
     r = Registry()
     with requests_mock.mock() as m:
         response = '{"email": "al@kpm.sh", "token": "login_token"}'
-        m.post("https://api.kpm.sh/api/v1/users/login?user%5Bpassword%5D=plop&user%5Busername%5D=ant31", complete_qs=True, text=response)
+        m.post("https://api.kpm.sh/api/v1/users/login", complete_qs=True, text=response)
         login_r = r.login("ant31", "plop")
         assert json.dumps(login_r) == json.dumps(json.loads(response))
         assert r.auth.token == "login_token"
@@ -151,7 +151,7 @@ def test_login_failed():
     r = Registry()
     with requests_mock.mock() as m:
         response = '{"email": "al@kpm.sh", "token": "login_token"}'
-        m.post("https://api.kpm.sh/api/v1/users/login?user%5Bpassword%5D=plop&user%5Busername%5D=ant31",
+        m.post("https://api.kpm.sh/api/v1/users/login",
               complete_qs=True,
               text=response, status_code=401)
         with pytest.raises(requests.HTTPError):

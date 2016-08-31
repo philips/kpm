@@ -18,6 +18,5 @@ RUN pip install gunicorn -U \
   && python setup.py install
 
 
-ENTRYPOINT ["gunicorn", "kpm.api.wsgi:app"]
-CMD ["-b", ":5000", "--threads", "3", "-w", "1"]
-EXPOSE 5000
+
+CMD ["kpm"]
