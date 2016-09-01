@@ -1,6 +1,6 @@
 import json
-from kpm.utils import parse_cmdline_variables
 import kpm.deploy
+import kpm.command
 from kpm.commands.command_base import CommandBase
 
 
@@ -37,7 +37,7 @@ class DeployCmd(CommandBase):
         parser.add_argument("-v", "--version", nargs="?",
                             help="package VERSION", default=None)
         parser.add_argument("-x", "--variables",
-                            help="variables", default=None, action="append")
+                            help="variables", default={}, action=kpm.command.LoadVariables)
         parser.add_argument("--shards",
                             help="Shards list/dict/count: eg. --shards=5 ; --shards='[{\"name\": 1, \"name\": 2}]'",
                             default=None)
@@ -47,10 +47,6 @@ class DeployCmd(CommandBase):
                             help='registry API url')
 
     def _call(self):
-        variables = None
-        if self.variables is not None:
-            variables = parse_cmdline_variables(self.variables)
-
         self.status = kpm.deploy.deploy(self.package,
                                         version=self.version,
                                         dest=self.tmpdir,
@@ -59,7 +55,7 @@ class DeployCmd(CommandBase):
                                         dry=self.dry_run,
                                         endpoint=self.registry_host,
                                         proxy=self.api_proxy,
-                                        variables=variables,
+                                        variables=self.variables,
                                         shards=self.shards,
                                         fmt=self.output)
 

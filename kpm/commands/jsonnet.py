@@ -1,6 +1,6 @@
 import json
+import kpm.command
 from kpm.render_jsonnet import RenderJsonnet
-from kpm.utils import parse_cmdline_variables
 from kpm.commands.command_base import CommandBase
 
 
@@ -23,7 +23,7 @@ class JsonnetCmd(CommandBase):
         parser.add_argument("--namespace", nargs="?",
                             help="kubernetes namespace", default='default')
         parser.add_argument("-x", "--variables",
-                            help="variables", default=None, action="append")
+                            help="variables", default={}, action=kpm.command.LoadVariables)
         # @TODO shards
         parser.add_argument("--shards",
                             help="Shards list/dict/count: eg. --shards=5 ; --shards='[{\"name\": 1, \"name\": 2}]'",
@@ -31,14 +31,10 @@ class JsonnetCmd(CommandBase):
         parser.add_argument('filepath', nargs=1, help="Fetch package from the registry")
 
     def _call(self):
-
         r = RenderJsonnet()
         namespace = self.namespace
-        variables = {}
-        if self.variables is not None:
-            variables = parse_cmdline_variables(self.variables)
-        variables['namespace'] = namespace
-        tla_codes = {"variables": variables}
+        self.variables['namespace'] = namespace
+        tla_codes = {"variables": self.variables}
         p = open(self.filepath).read()
         self.result = r.render_jsonnet(p, tla_codes={"params": json.dumps(tla_codes)})
 

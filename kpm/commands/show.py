@@ -33,7 +33,7 @@ class ShowCmd(CommandBase):
     def _call(self):
         r = kpm.registry.Registry(self.registry_host)
         result = r.pull(self.package, version=self.version)
-        p = kpm.packager.Package(result)
+        p = kpm.packager.Package(result, b64_encoded=False)
         if self.tree:
             self.result = "\n".join(p.tree())
         elif self.file:
