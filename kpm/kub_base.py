@@ -92,7 +92,7 @@ class KubBase(object):
         elif parse.scheme == "file":
             parts = parse.path.split("/")
             _, ext = os.path.splitext(parts[-1])
-            if ext == "tar.gz":
+            if ext == ".gz":
                 filepath = parse.path
             else:
                 filepath = tempfile.NamedTemporaryFile().name

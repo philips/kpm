@@ -7,6 +7,7 @@ class RemoveCmd(DeployCmd):
     help_message = "remove a package from kubernetes"
 
     def _call(self):
+        packages = self._packages()
         self.status = kpm.deploy.delete(self.package,
                                         version=self.version,
                                         dest=self.tmpdir,
@@ -17,4 +18,5 @@ class RemoveCmd(DeployCmd):
                                         proxy=self.api_proxy,
                                         variables=self.variables,
                                         shards=self.shards,
-                                        fmt=self.output)
+                                        fmt=self.output,
+                                        packages=packages)

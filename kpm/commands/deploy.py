@@ -1,6 +1,7 @@
 import json
 import kpm.deploy
 import kpm.command
+from kpm.kub_jsonnet import KubJsonnet
 from kpm.commands.command_base import CommandBase
 
 
@@ -20,6 +21,7 @@ class DeployCmd(CommandBase):
         self.version = options.version
         self.tmpdir = options.tmpdir
         self.variables = options.variables
+        self.offline = options.offline
         self.status = None
         super(DeployCmd, self).__init__(options)
 
@@ -43,10 +45,25 @@ class DeployCmd(CommandBase):
                             default=None)
         parser.add_argument("--force", action='store_true', default=False,
                             help="force upgrade, delete and recreate resources")
+        parser.add_argument("--offline", action='store_true', default=False,
+                            help="Deploy from a tarball")
         parser.add_argument("-H", "--registry-host", nargs="?", default=kpm.registry.DEFAULT_REGISTRY,
                             help='registry API url')
 
+    def _packages(self):
+        packages = None
+        if self.offline:
+            k = KubJsonnet(self.package,
+                           endpoint=self.registry_host,
+                           variables=self.variables,
+                           namespace=self.namespace,
+                           shards=self.shards,
+                           version=self.version)
+            packages = k.build()
+        return packages
+
     def _call(self):
+        packages = self._packages()
         self.status = kpm.deploy.deploy(self.package,
                                         version=self.version,
                                         dest=self.tmpdir,
@@ -57,7 +74,8 @@ class DeployCmd(CommandBase):
                                         proxy=self.api_proxy,
                                         variables=self.variables,
                                         shards=self.shards,
-                                        fmt=self.output)
+                                        fmt=self.output,
+                                        packages=packages)
 
     def _render_json(self):
         print json.dumps(self.status)
