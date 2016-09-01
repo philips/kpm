@@ -1,4 +1,3 @@
-from kpm.utils import parse_cmdline_variables
 import kpm.deploy
 from kpm.commands.deploy import DeployCmd
 
@@ -8,10 +7,6 @@ class RemoveCmd(DeployCmd):
     help_message = "remove a package from kubernetes"
 
     def _call(self):
-        variables = None
-        if self.variables is not None:
-            variables = parse_cmdline_variables(self.variables)
-
         self.status = kpm.deploy.delete(self.package,
                                         version=self.version,
                                         dest=self.tmpdir,
@@ -20,6 +15,6 @@ class RemoveCmd(DeployCmd):
                                         dry=self.dry_run,
                                         endpoint=self.registry_host,
                                         proxy=self.api_proxy,
-                                        variables=variables,
+                                        variables=self.variables,
                                         shards=self.shards,
                                         fmt=self.output)

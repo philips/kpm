@@ -1,7 +1,7 @@
 import json
 import kpm.registry
+import kpm.command
 from kpm.kub_jsonnet import KubJsonnet
-from kpm.utils import parse_cmdline_variables
 from kpm.commands.command_base import CommandBase
 
 
@@ -17,7 +17,6 @@ class GenerateCmd(CommandBase):
         self.variables = options.variables
         self.registry_host = options.registry_host
         self.kub = None
-
         super(GenerateCmd, self).__init__(options)
 
     @classmethod
@@ -25,7 +24,7 @@ class GenerateCmd(CommandBase):
         parser.add_argument("--namespace", nargs="?",
                             help="kubernetes namespace", default='default')
         parser.add_argument("-x", "--variables",
-                            help="variables", default=None, action="append")
+                            help="variables", default={}, action=kpm.command.LoadVariables)
         parser.add_argument('-p', "--pull", nargs=1, help="Fetch package from the registry")
         parser.add_argument("-H", "--registry-host", nargs="?", default=kpm.registry.DEFAULT_REGISTRY,
                             help='registry API url')
@@ -36,13 +35,9 @@ class GenerateCmd(CommandBase):
         name = self.package
         version = self.version
         namespace = self.namespace
-        variables = {}
-        if self.variables is not None:
-            variables = parse_cmdline_variables(self.variables)
-
-        variables['namespace'] = namespace
         k = KubJsonnet(name, endpoint=self.registry_host,
-                       variables=variables, namespace=namespace, version=version)
+                       variables=self.variables,
+                       namespace=namespace, version=version)
         filename = "%s_%s.tar.gz" % (k.name.replace("/", "_"), k.version)
         with open(filename, 'wb') as f:
             f.write(k.build_tar("."))

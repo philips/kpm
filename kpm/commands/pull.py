@@ -2,6 +2,7 @@ import os
 import json
 import kpm.registry
 import kpm.packager
+import kpm.command
 from kpm.manifest_jsonnet import ManifestJsonnet
 from kpm.commands.command_base import CommandBase
 
@@ -33,7 +34,7 @@ class PullCmd(CommandBase):
         parser.add_argument("-v", "--version", nargs="?",
                             help="package VERSION", default=None)
         parser.add_argument("-x", "--variables",
-                            help="variables", default=None, action="append")
+                            help="variables", default={}, action=kpm.command.LoadVariables)
         parser.add_argument("--shards",
                             help="Shards list/dict/count: eg. --shards=5 ; --shards='[{\"name\": 1, \"name\": 2}]'",
                             default=None)
