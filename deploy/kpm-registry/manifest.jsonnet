@@ -9,7 +9,7 @@ function(
       name: "coreos/kpm-registry",
       expander: "jinja2",
       author: "Antoine Legrand",
-      version: "0.21.1-2",
+      version: "0.21.1-4",
       description: "kpm-registry",
       license: "Apache 2.0",
     },
@@ -38,8 +38,9 @@ function(
         template: (importstr "templates/kpm-registry-svc.yaml"),
         name: "kpm-registry",
         type: "service",
-      },
-    ],
+      }
+      ],
+
 
     deploy: [
       if $.variables.etcd_volumes == "pvc" then

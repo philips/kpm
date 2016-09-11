@@ -18,8 +18,8 @@ spec:
           image: {{image_etcd}}
           resources:
             limits:
-              cpu: 50m
-              memory: 100Mi
+              cpu: 200m
+              memory: 500Mi
           args:
             - etcd
             - --proxy
@@ -33,8 +33,8 @@ spec:
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: 200m
-              memory: 500Mi
+              cpu: 1
+#              memory: 6Gi
           env:
             - name: KPM_URI
               value: {{kpm_uri}}
@@ -46,9 +46,9 @@ spec:
             - --threads
             - "1"
             - -w
-            - "3"
+            - "4"
             - --timeout
-            - "120"
+            - "240"
           ports:
             - name: kpm-registry
               protocol: TCP
