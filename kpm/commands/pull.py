@@ -17,6 +17,7 @@ class PullCmd(CommandBase):
         self.registry_host = options.registry_host
         self.version = options.version
         self.dest = options.dest
+        self.tarball = options.tarball
         self.path = None
         super(PullCmd, self).__init__(options)
 
@@ -25,6 +26,9 @@ class PullCmd(CommandBase):
         parser.add_argument('package', nargs=1, help="package-name")
         parser.add_argument("--dest", nargs="?", default="/tmp/",
                             help="directory used to extract resources")
+
+        parser.add_argument("--tarball", action="store_true", default=False,
+                            help="download the tar.gz")
         parser.add_argument("-v", "--version", nargs="?",
                             help="package VERSION", default=None)
         parser.add_argument("-x", "--variables",
@@ -37,7 +41,12 @@ class PullCmd(CommandBase):
         result = r.pull(self.package, version=self.version)
         p = kpm.packager.Package(result, b64_encoded=False)
         self.path = os.path.join(self.dest, ManifestJsonnet(p).package_name())
-        p.extract(self.path)
+        if self.tarball:
+            self.path = self.path + ".tar.gz"
+            with open(self.path, 'wb') as f:
+                f.write(result)
+        else:
+            p.extract(self.path)
 
     def _render_json(self):
         print json.dumps({"pull": self.package,

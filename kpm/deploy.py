@@ -26,14 +26,16 @@ def _process(package_name,
              fmt="text",
              proxy=None,
              variables=None,
-             shards=None):
+             shards=None,
+             packages=None):
 
-    registry = Registry(endpoint=endpoint)
-    packages = registry.generate(package_name,
-                                 namespace=namespace,
-                                 version=version,
-                                 variables=variables,
-                                 shards=shards)
+    if packages is None:
+        registry = Registry(endpoint=endpoint)
+        packages = registry.generate(package_name,
+                                     namespace=namespace,
+                                     version=version,
+                                     variables=variables,
+                                     shards=shards)
 
     dest = os.path.join(dest, package_name)
 
